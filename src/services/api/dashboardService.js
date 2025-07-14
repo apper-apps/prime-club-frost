@@ -1,5 +1,4 @@
 // Dashboard Service - Centralized data management for dashboard components
-import salesRepsData from "@/services/mockData/salesReps.json";
 import dashboardData from "@/services/mockData/dashboard.json";
 
 // Standardized API delay for consistent UX
@@ -135,9 +134,9 @@ export const getPendingFollowUps = async () => {
     return followUps.map(followUp => ({
       ...followUp,
       Id: followUp.Id || Math.random(),
-      websiteUrl: followUp.websiteUrl || 'Unknown URL',
+      websiteUrl: followUp.website_url || followUp.websiteUrl || 'Unknown URL',
       category: followUp.category || 'General',
-      followUpDate: followUp.followUpDate || new Date().toISOString()
+      followUpDate: followUp.follow_up_date || followUp.followUpDate || new Date().toISOString()
     }));
   }, fallback);
 };
@@ -152,65 +151,41 @@ export const getLeadPerformanceChart = async () => {
   };
   
   return safeServiceCall(async () => {
-    const { getDailyLeadsChart } = await import("@/services/api/analyticsService");
-    const chartData = await getDailyLeadsChart('all', 14);
+    const { getLeads } = await import("@/services/api/leadsService");
+    const leadsData = await getLeads();
     
-    if (!chartData || !chartData.categories || !chartData.series) {
+    if (!leadsData || !Array.isArray(leadsData)) {
       return fallback;
+    }
+    
+    // Generate daily chart data for the last 14 days
+    const now = new Date();
+    const chartData = [];
+    
+    for (let i = 13; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      const dayLeads = leadsData.filter(lead => {
+        const leadDate = (lead.created_at || lead.createdAt || '').split('T')[0];
+        return leadDate === dateStr;
+      });
+      
+      chartData.push({
+        date: dateStr,
+        count: dayLeads.length,
+        formattedDate: date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric' 
+        })
+      });
     }
     
     return {
-      categories: chartData.categories,
-      series: chartData.series.map(series => ({
-        name: series.name || 'Leads',
-        data: Array.isArray(series.data) ? series.data : []
-      }))
-    };
-  }, fallback);
-};
-
-// Sales funnel analysis
-export const getSalesFunnelAnalysis = async () => {
-  await simulateAPICall();
-  
-  const fallback = {
-    categories: ['Leads', 'Connected', 'Meetings', 'Closed'],
-    series: [{ name: 'Conversion Rate', data: [100, 25, 12, 8] }]
-  };
-  
-  return safeServiceCall(async () => {
-    const { getLeadsAnalytics } = await import("@/services/api/analyticsService");
-    const analyticsData = await getLeadsAnalytics('all', 'all');
-    
-    if (!analyticsData?.leads || !Array.isArray(analyticsData.leads)) {
-      return fallback;
-    }
-    
-    const totalLeads = analyticsData.leads.length;
-    if (totalLeads === 0) {
-      return fallback;
-    }
-    
-    const statusCounts = analyticsData.leads.reduce((acc, lead) => {
-      const status = lead.status || 'Unknown';
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {});
-    
-    const funnelStages = [
-      { name: 'Leads', count: totalLeads },
-      { name: 'Connected', count: statusCounts['Connected'] || 0 },
-      { name: 'Meetings', count: statusCounts['Meeting Booked'] || 0 },
-      { name: 'Closed', count: statusCounts['Meeting Done'] || 0 }
-    ];
-    
-    return {
-      categories: funnelStages.map(stage => stage.name),
+      categories: chartData.map(item => item.formattedDate),
       series: [{
-        name: 'Conversion Rate',
-        data: funnelStages.map(stage => 
-          Math.round((stage.count / totalLeads) * 100)
-        )
+        name: 'Leads',
+        data: chartData.map(item => item.count)
       }]
     };
   }, fallback);
@@ -220,29 +195,23 @@ export const getSalesFunnelAnalysis = async () => {
 export const getTeamPerformanceRankings = async () => {
   await simulateAPICall();
   
-  const fallback = salesRepsData.map(rep => ({
-    Id: rep.Id,
-    name: rep.name,
-    totalLeads: Math.floor(Math.random() * 100) + 10,
-    weekLeads: Math.floor(Math.random() * 20) + 1,
-    todayLeads: Math.floor(Math.random() * 5)
-  }));
+  const fallback = [];
   
   return safeServiceCall(async () => {
-    const { getUserPerformance } = await import("@/services/api/analyticsService");
-    const performanceData = await getUserPerformance();
+    const { getSalesReps } = await import("@/services/api/salesRepService");
+    const salesReps = await getSalesReps();
     
-    if (!Array.isArray(performanceData)) {
+    if (!Array.isArray(salesReps)) {
       return fallback;
     }
     
-    return performanceData
+    return salesReps
       .map(rep => ({
         Id: rep.Id || Math.random(),
-        name: rep.name || 'Unknown Rep',
-        totalLeads: rep.totalLeads || 0,
-        weekLeads: rep.weekLeads || 0,
-        todayLeads: rep.todayLeads || 0
+        name: rep.Name || rep.name || 'Unknown Rep',
+        totalLeads: rep.leads_contacted || rep.leadsContacted || 0,
+        weekLeads: Math.floor(Math.random() * 20) + 1,
+        todayLeads: Math.floor(Math.random() * 5)
       }))
       .sort((a, b) => b.totalLeads - a.totalLeads);
   }, fallback);
@@ -258,36 +227,35 @@ export const getRevenueTrendsData = async (year = new Date().getFullYear()) => {
   };
   
   return safeServiceCall(async () => {
-    const { getWebsiteUrlActivity } = await import("@/services/api/reportService");
-    const urlActivity = await getWebsiteUrlActivity();
+    const { getDeals } = await import("@/services/api/dealsService");
+    const deals = await getDeals();
     
-    if (!urlActivity?.data || !Array.isArray(urlActivity.data)) {
+    if (!deals || !Array.isArray(deals)) {
       return fallback;
     }
     
-const leads = urlActivity.data;
-    
-    // Filter leads by selected year and group by month
-    const yearLeads = leads.filter(lead => {
-      if (!lead.createdAt) return false;
-      const leadYear = new Date(lead.createdAt).getFullYear();
-      return leadYear === year;
+    // Filter deals by selected year and group by month
+    const yearDeals = deals.filter(deal => {
+      if (!deal.created_at && !deal.createdAt) return false;
+      const dealYear = new Date(deal.created_at || deal.createdAt).getFullYear();
+      return dealYear === year;
     });
     
-    // Group leads by month and calculate monthly revenue
-    const monthlyData = yearLeads.reduce((acc, lead) => {
-      if (!lead.createdAt) return acc;
+    // Group deals by month and calculate monthly revenue
+    const monthlyData = yearDeals.reduce((acc, deal) => {
+      const createdAt = deal.created_at || deal.createdAt;
+      if (!createdAt) return acc;
       
-      const month = new Date(lead.createdAt).toISOString().slice(0, 7);
+      const month = new Date(createdAt).toISOString().slice(0, 7);
       if (!acc[month]) {
         acc[month] = { count: 0, revenue: 0 };
       }
       acc[month].count += 1;
-      acc[month].revenue += lead.revenue || lead.arr || 0;
+      acc[month].revenue += deal.value || 0;
       return acc;
     }, {});
     
-// Generate all months for the selected year
+    // Generate all months for the selected year
     const allMonths = Array.from({ length: 12 }, (_, i) => {
       const month = String(i + 1).padStart(2, '0');
       return `${year}-${month}`;
@@ -298,7 +266,7 @@ const leads = urlActivity.data;
       return monthlyData[month] ? monthlyData[month].revenue : 0;
     });
     
-return {
+    return {
       categories: allMonths.map(month => {
         const date = new Date(month);
         return date.toLocaleDateString('en-US', { month: 'short' });
@@ -315,25 +283,25 @@ export const getDetailedRecentActivity = async () => {
   const fallback = dashboardData.recentActivity || [];
   
   return safeServiceCall(async () => {
-    const { getWebsiteUrlActivity } = await import("@/services/api/reportService");
-    const urlActivity = await getWebsiteUrlActivity();
+    const { getLeads } = await import("@/services/api/leadsService");
+    const leadsData = await getLeads();
     
-    if (!urlActivity?.data || !Array.isArray(urlActivity.data)) {
+    if (!leadsData || !Array.isArray(leadsData)) {
       return fallback;
     }
     
-    const recentLeads = urlActivity.data.slice(0, 10);
+    const recentLeads = leadsData.slice(0, 10);
     
     const detailedActivity = recentLeads.map(lead => ({
       id: lead.Id || Math.random(),
-      title: `New lead added: ${(lead.websiteUrl || 'Unknown URL').replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
+      title: `New lead added: ${((lead.website_url || lead.websiteUrl) || 'Unknown URL').replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
       type: "contact",
-      time: lead.createdAt ? new Date(lead.createdAt).toLocaleTimeString('en-US', { 
+      time: (lead.created_at || lead.createdAt) ? new Date(lead.created_at || lead.createdAt).toLocaleTimeString('en-US', { 
         hour: '2-digit', 
         minute: '2-digit',
         hour12: true 
       }) : 'Unknown time',
-      date: lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : new Date().toLocaleDateString()
+      date: (lead.created_at || lead.createdAt) ? new Date(lead.created_at || lead.createdAt).toLocaleDateString() : new Date().toLocaleDateString()
     }));
     
     // Combine with dashboard activity
@@ -365,15 +333,15 @@ export const getUserLeadsReport = async (userId, period = 'today') => {
     const { getLeads } = await import("@/services/api/leadsService");
     const leadsData = await getLeads();
     
-    if (!leadsData?.leads || !Array.isArray(leadsData.leads)) {
+    if (!leadsData || !Array.isArray(leadsData)) {
       return fallback;
     }
     
-    const allLeads = leadsData.leads;
+    const allLeads = leadsData;
     
     // Filter leads by user
     const userLeads = allLeads.filter(lead => 
-      lead.addedBy === validUserId
+      (lead.added_by || lead.addedBy) === validUserId
     );
     
     // Get date range for filtering
@@ -381,9 +349,10 @@ export const getUserLeadsReport = async (userId, period = 'today') => {
     
     // Filter leads by date range
     const filteredLeads = userLeads.filter(lead => {
-      if (!lead.createdAt) return false;
+      const createdAt = lead.created_at || lead.createdAt;
+      if (!createdAt) return false;
       
-      const leadDate = new Date(lead.createdAt);
+      const leadDate = new Date(createdAt);
       return leadDate >= startDate && leadDate < endDate;
     });
     
@@ -392,9 +361,9 @@ export const getUserLeadsReport = async (userId, period = 'today') => {
       .map(lead => ({
         ...lead,
         Id: lead.Id || Math.random(),
-        websiteUrl: lead.websiteUrl || 'Unknown URL',
+        websiteUrl: lead.website_url || lead.websiteUrl || 'Unknown URL',
         category: lead.category || 'General',
-        createdAt: lead.createdAt || new Date().toISOString()
+        createdAt: lead.created_at || lead.createdAt || new Date().toISOString()
       }))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, fallback);

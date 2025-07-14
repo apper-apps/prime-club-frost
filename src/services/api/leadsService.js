@@ -1,250 +1,433 @@
-import leadsData from "@/services/mockData/leads.json";
-import salesRepData from "@/services/mockData/salesReps.json";
+import { toast } from 'react-toastify';
 
-let leads = [...leadsData];
-let salesReps = [...salesRepData];
-
-// Track all URLs that have ever been added to the system (for fresh lead detection)
-const leadHistoryTracker = new Map();
-
-// Initialize history tracker with existing leads
-leads.forEach(lead => {
-  const normalizedUrl = lead.websiteUrl.toLowerCase().replace(/\/$/, '');
-  leadHistoryTracker.set(normalizedUrl, true);
-});
-
-// Utility function to remove duplicate website URLs, keeping the most recent entry
-const deduplicateLeads = (leadsArray) => {
-  const urlMap = new Map();
-  const duplicates = [];
-  
-  // Sort by creation date (most recent first) to keep the latest entry
-  const sortedLeads = [...leadsArray].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  
-  sortedLeads.forEach(lead => {
-    const normalizedUrl = lead.websiteUrl.toLowerCase().replace(/\/$/, ''); // Remove trailing slash and normalize
-    
-    // Update history tracker
-    leadHistoryTracker.set(normalizedUrl, true);
-    
-    if (urlMap.has(normalizedUrl)) {
-      duplicates.push(lead);
-    } else {
-      urlMap.set(normalizedUrl, lead);
-    }
-  });
-return {
-    uniqueLeads: Array.from(urlMap.values()),
-    duplicatesRemoved: duplicates,
-    duplicateCount: duplicates.length
-  };
-};
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const getLeads = async () => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 400));
+  await delay(400);
   
-  // Automatically deduplicate leads
-  const deduplicationResult = deduplicateLeads(leads);
-  
-  // Update the leads array if duplicates were found
-  if (deduplicationResult.duplicateCount > 0) {
-    leads = deduplicationResult.uniqueLeads;
-  }
-  
-  // Enhance leads with sales rep names
-  const leadsWithRepNames = leads.map(lead => {
-    const salesRep = salesReps.find(rep => rep.Id === lead.addedBy);
-    return {
-      ...lead,
-      addedByName: salesRep ? salesRep.name : 'Unknown'
+  try {
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const params = {
+      fields: [
+        { field: { Name: "Name" } },
+        { field: { Name: "website_url" } },
+        { field: { Name: "team_size" } },
+        { field: { Name: "arr" } },
+        { field: { Name: "category" } },
+        { field: { Name: "linkedin_url" } },
+        { field: { Name: "status" } },
+        { field: { Name: "funding_type" } },
+        { field: { Name: "edition" } },
+        { field: { Name: "follow_up_date" } },
+        { field: { Name: "added_by" } },
+        { field: { Name: "added_by_name" } },
+        { field: { Name: "created_at" } },
+        { field: { Name: "Tags" } },
+        { field: { Name: "Owner" } }
+      ],
+      orderBy: [
+        {
+          fieldName: "created_at",
+          sorttype: "DESC"
+        }
+      ]
     };
-  });
-  
-  return {
-    leads: leadsWithRepNames,
-    deduplicationResult: deduplicationResult.duplicateCount > 0 ? deduplicationResult : null
-  };
+    
+    const response = await apperClient.fetchRecords('lead', params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      toast.error(response.message);
+      return [];
+    }
+    
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching leads:", error);
+    toast.error("Failed to load leads");
+    return [];
+  }
 };
 
 export const getLeadById = async (id) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await delay(200);
   
-  const lead = leads.find(l => l.Id === id);
-  if (!lead) {
-    throw new Error("Lead not found");
+  try {
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const params = {
+      fields: [
+        { field: { Name: "Name" } },
+        { field: { Name: "website_url" } },
+        { field: { Name: "team_size" } },
+        { field: { Name: "arr" } },
+        { field: { Name: "category" } },
+        { field: { Name: "linkedin_url" } },
+        { field: { Name: "status" } },
+        { field: { Name: "funding_type" } },
+        { field: { Name: "edition" } },
+        { field: { Name: "follow_up_date" } },
+        { field: { Name: "added_by" } },
+        { field: { Name: "added_by_name" } },
+        { field: { Name: "created_at" } },
+        { field: { Name: "Tags" } },
+        { field: { Name: "Owner" } }
+      ]
+    };
+    
+    const response = await apperClient.getRecordById('lead', id, params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      toast.error(response.message);
+      return null;
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching lead with ID ${id}:`, error);
+    toast.error("Failed to load lead");
+    return null;
   }
-  
-  return { ...lead };
 };
 
 export const createLead = async (leadData) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await delay(300);
   
-  // Validate required fields
-  if (!leadData.websiteUrl || !leadData.websiteUrl.trim()) {
-    throw new Error("Website URL is required");
+  try {
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const params = {
+      records: [
+        {
+          Name: leadData.name || leadData.Name,
+          website_url: leadData.website_url || leadData.websiteUrl,
+          team_size: leadData.team_size || leadData.teamSize || "1-3",
+          arr: leadData.arr || 0,
+          category: leadData.category || "Other",
+          linkedin_url: leadData.linkedin_url || leadData.linkedinUrl,
+          status: leadData.status || "Keep an Eye",
+          funding_type: leadData.funding_type || leadData.fundingType || "Bootstrapped",
+          edition: leadData.edition || "Select Edition",
+          follow_up_date: leadData.follow_up_date || leadData.followUpDate,
+          added_by: leadData.added_by || leadData.addedBy,
+          added_by_name: leadData.added_by_name || leadData.addedByName,
+          Tags: leadData.tags || leadData.Tags,
+          Owner: leadData.owner || leadData.Owner
+        }
+      ]
+    };
+    
+    const response = await apperClient.createRecord('lead', params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      toast.error(response.message);
+      return null;
+    }
+    
+    if (response.results) {
+      const successfulRecords = response.results.filter(result => result.success);
+      const failedRecords = response.results.filter(result => !result.success);
+      
+      if (failedRecords.length > 0) {
+        console.error(`Failed to create ${failedRecords.length} leads:${JSON.stringify(failedRecords)}`);
+        
+        failedRecords.forEach(record => {
+          record.errors?.forEach(error => {
+            toast.error(`${error.fieldLabel}: ${error.message}`);
+          });
+          if (record.message) toast.error(record.message);
+        });
+      }
+      
+      if (successfulRecords.length > 0) {
+        toast.success("Lead created successfully");
+        return successfulRecords[0].data;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error creating lead:", error);
+    toast.error("Failed to create lead");
+    return null;
   }
-  
-  // Check for duplicate website URL before creating
-  const normalizedUrl = leadData.websiteUrl.toLowerCase().replace(/\/$/, '');
-  const existingLead = leads.find(lead => 
-    lead.websiteUrl.toLowerCase().replace(/\/$/, '') === normalizedUrl
-  );
-  
-  if (existingLead) {
-    throw new Error(`A lead with website URL "${leadData.websiteUrl}" already exists`);
-  }
-// Update history tracker for new lead
-  leadHistoryTracker.set(normalizedUrl, true);
-  const maxId = Math.max(...leads.map(l => l.Id), 0);
-  const newLead = {
-    websiteUrl: leadData.websiteUrl,
-teamSize: leadData.teamSize || "1-3",
-    arr: leadData.arr || 0,
-    category: leadData.category || "Other",
-    linkedinUrl: leadData.linkedinUrl || "",
-    status: leadData.status || "Keep an Eye",
-    fundingType: leadData.fundingType || "Bootstrapped",
-    edition: leadData.edition || "Select Edition",
-    followUpDate: leadData.followUpDate || null,
-    addedBy: leadData.addedBy || 1, // Default to first sales rep for demo
-    Id: maxId + 1,
-    createdAt: new Date().toISOString()
-  };
-  
-  leads.push(newLead);
-  
-  // Return lead with sales rep name
-  const salesRep = salesReps.find(rep => rep.Id === newLead.addedBy);
-  return { 
-    ...newLead,
-    addedByName: salesRep ? salesRep.name : 'Unknown'
-  };
 };
 
 export const updateLead = async (id, updates) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await delay(300);
   
-  const index = leads.findIndex(l => l.Id === id);
-  if (index === -1) {
-    throw new Error("Lead not found");
+  try {
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const params = {
+      records: [
+        {
+          Id: id,
+          Name: updates.name || updates.Name,
+          website_url: updates.website_url || updates.websiteUrl,
+          team_size: updates.team_size || updates.teamSize,
+          arr: updates.arr,
+          category: updates.category,
+          linkedin_url: updates.linkedin_url || updates.linkedinUrl,
+          status: updates.status,
+          funding_type: updates.funding_type || updates.fundingType,
+          edition: updates.edition,
+          follow_up_date: updates.follow_up_date || updates.followUpDate,
+          added_by: updates.added_by || updates.addedBy,
+          added_by_name: updates.added_by_name || updates.addedByName,
+          Tags: updates.tags || updates.Tags,
+          Owner: updates.owner || updates.Owner
+        }
+      ]
+    };
+    
+    const response = await apperClient.updateRecord('lead', params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      toast.error(response.message);
+      return null;
+    }
+    
+    if (response.results) {
+      const successfulUpdates = response.results.filter(result => result.success);
+      const failedUpdates = response.results.filter(result => !result.success);
+      
+      if (failedUpdates.length > 0) {
+        console.error(`Failed to update ${failedUpdates.length} leads:${JSON.stringify(failedUpdates)}`);
+        
+        failedUpdates.forEach(record => {
+          record.errors?.forEach(error => {
+            toast.error(`${error.fieldLabel}: ${error.message}`);
+          });
+          if (record.message) toast.error(record.message);
+        });
+      }
+      
+      if (successfulUpdates.length > 0) {
+        toast.success("Lead updated successfully");
+        return successfulUpdates[0].data;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error updating lead:", error);
+    toast.error("Failed to update lead");
+    return null;
   }
-  
-  leads[index] = { ...leads[index], ...updates };
-  return { ...leads[index] };
 };
 
 export const deleteLead = async (id) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await delay(300);
   
-  const index = leads.findIndex(l => l.Id === id);
-  if (index === -1) {
-    throw new Error("Lead not found");
+  try {
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const params = {
+      RecordIds: [id]
+    };
+    
+    const response = await apperClient.deleteRecord('lead', params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      toast.error(response.message);
+      return false;
+    }
+    
+    if (response.results) {
+      const successfulDeletions = response.results.filter(result => result.success);
+      const failedDeletions = response.results.filter(result => !result.success);
+      
+      if (failedDeletions.length > 0) {
+        console.error(`Failed to delete ${failedDeletions.length} leads:${JSON.stringify(failedDeletions)}`);
+        
+        failedDeletions.forEach(record => {
+          if (record.message) toast.error(record.message);
+        });
+      }
+      
+      if (successfulDeletions.length > 0) {
+        toast.success("Lead deleted successfully");
+        return true;
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error("Error deleting lead:", error);
+    toast.error("Failed to delete lead");
+    return false;
   }
-  
-  leads.splice(index, 1);
-  return { success: true };
 };
 
 export const getDailyLeadsReport = async () => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await delay(300);
   
-  // Get today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0];
-  
-  // Filter leads created today
-  const todaysLeads = leads.filter(lead => {
-    const leadDate = lead.createdAt.split('T')[0];
-    return leadDate === today;
-  });
-  
-  // Group by sales rep
-  const reportData = {};
-  
-  // Initialize all sales reps with empty data
-  salesReps.forEach(rep => {
-    reportData[rep.name] = {
-      salesRep: rep.name,
-      salesRepId: rep.Id,
-      leads: [],
-      leadCount: 0,
-      lowPerformance: false
-    };
-  });
-  
-  // Add today's leads to the respective sales reps
-  todaysLeads.forEach(lead => {
-    const salesRep = salesReps.find(rep => rep.Id === lead.addedBy);
-    const repName = salesRep ? salesRep.name : 'Unknown';
+  try {
+    const today = new Date().toISOString().split('T')[0];
     
-    if (reportData[repName]) {
-      reportData[repName].leads.push(lead);
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const params = {
+      fields: [
+        { field: { Name: "Name" } },
+        { field: { Name: "website_url" } },
+        { field: { Name: "added_by" } },
+        { field: { Name: "added_by_name" } },
+        { field: { Name: "created_at" } }
+      ],
+      where: [
+        {
+          FieldName: "created_at",
+          Operator: "EqualTo",
+          Values: [today]
+        }
+      ],
+      orderBy: [
+        {
+          fieldName: "added_by",
+          sorttype: "ASC"
+        }
+      ]
+    };
+    
+    const response = await apperClient.fetchRecords('lead', params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      toast.error(response.message);
+      return [];
     }
-  });
-  
-  // Calculate lead counts and identify low performers
-  Object.values(reportData).forEach(repData => {
-    repData.leadCount = repData.leads.length;
-    repData.lowPerformance = repData.leadCount < 5;
-  });
-  
-  // Convert to array and sort by lead count (descending)
-return Object.values(reportData).sort((a, b) => b.leads.length - a.leads.length);
+    
+    const todaysLeads = response.data || [];
+    
+    // Group by sales rep
+    const reportData = {};
+    
+    todaysLeads.forEach(lead => {
+      const repName = lead.added_by_name || 'Unknown';
+      
+      if (!reportData[repName]) {
+        reportData[repName] = {
+          salesRep: repName,
+          salesRepId: lead.added_by,
+          leads: [],
+          leadCount: 0,
+          lowPerformance: false
+        };
+      }
+      
+      reportData[repName].leads.push(lead);
+    });
+    
+    // Calculate lead counts and identify low performers
+    Object.values(reportData).forEach(repData => {
+      repData.leadCount = repData.leads.length;
+      repData.lowPerformance = repData.leadCount < 5;
+    });
+    
+    return Object.values(reportData).sort((a, b) => b.leads.length - a.leads.length);
+  } catch (error) {
+    console.error("Error fetching daily leads report:", error);
+    toast.error("Failed to load daily leads report");
+    return [];
+  }
 };
 
 export const getPendingFollowUps = async () => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await delay(300);
   
-  // Get current date and 7 days from now
-  const now = new Date();
-  const sevenDaysFromNow = new Date();
-  sevenDaysFromNow.setDate(now.getDate() + 7);
-  
-  // Filter leads with follow-up dates within the next 7 days
-  const pendingFollowUps = leads.filter(lead => {
-    if (!lead.followUpDate) return false;
+  try {
+    const now = new Date();
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(now.getDate() + 7);
     
-    const followUpDate = new Date(lead.followUpDate);
-    return followUpDate >= now && followUpDate <= sevenDaysFromNow;
-  });
-// Sort by follow-up date (earliest first)
-  return pendingFollowUps.sort((a, b) => new Date(a.followUpDate) - new Date(b.followUpDate));
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const params = {
+      fields: [
+        { field: { Name: "Name" } },
+        { field: { Name: "website_url" } },
+        { field: { Name: "follow_up_date" } },
+        { field: { Name: "category" } },
+        { field: { Name: "added_by_name" } }
+      ],
+      where: [
+        {
+          FieldName: "follow_up_date",
+          Operator: "GreaterThanOrEqualTo",
+          Values: [now.toISOString().split('T')[0]]
+        },
+        {
+          FieldName: "follow_up_date",
+          Operator: "LessThanOrEqualTo",
+          Values: [sevenDaysFromNow.toISOString().split('T')[0]]
+        }
+      ],
+      orderBy: [
+        {
+          fieldName: "follow_up_date",
+          sorttype: "ASC"
+        }
+      ]
+    };
+    
+    const response = await apperClient.fetchRecords('lead', params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      toast.error(response.message);
+      return [];
+    }
+    
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching pending follow-ups:", error);
+    toast.error("Failed to load pending follow-ups");
+    return [];
+  }
 };
 
-// Get only fresh leads that have never existed in the system before
 export const getFreshLeadsOnly = async (leadsArray) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await delay(100);
   
-  const freshLeads = leadsArray.filter(lead => {
-    const normalizedUrl = lead.websiteUrl.toLowerCase().replace(/\/$/, '');
-    // Check if this URL was added today and wasn't in the system before today
-    const leadDate = new Date(lead.createdAt);
-    const today = new Date();
-    
-    // If lead was created today and URL never existed before, it's fresh
-    return leadDate.toDateString() === today.toDateString() && 
-           !wasUrlPreviouslyAdded(normalizedUrl, leadDate);
+  const today = new Date().toDateString();
+  
+  return leadsArray.filter(lead => {
+    const leadDate = new Date(lead.created_at || lead.createdAt);
+    return leadDate.toDateString() === today;
   });
-  
-  return freshLeads;
-};
-
-// Helper function to check if URL existed before a given date
-const wasUrlPreviouslyAdded = (normalizedUrl, currentDate) => {
-  // Check if any existing lead with this URL was created before the current date
-  const existingLeads = leads.filter(lead => {
-    const existingNormalizedUrl = lead.websiteUrl.toLowerCase().replace(/\/$/, '');
-    return existingNormalizedUrl === normalizedUrl && 
-           new Date(lead.createdAt) < currentDate;
-  });
-  
-  return existingLeads.length > 0;
 };

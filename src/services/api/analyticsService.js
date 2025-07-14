@@ -1,8 +1,4 @@
-import leadsData from "@/services/mockData/leads.json";
-import salesRepData from "@/services/mockData/salesReps.json";
-
-let leads = [...leadsData];
-let salesReps = [...salesRepData];
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Helper function to get date ranges
 const getDateRange = (period) => {
@@ -41,167 +37,238 @@ const getDateRange = (period) => {
   }
 };
 
-// Helper function to filter leads by date range and user
-const filterLeads = (period = 'all', userId = 'all') => {
-  let filteredLeads = [...leads];
-  
-  // Filter by user
-  if (userId !== 'all') {
-    filteredLeads = filteredLeads.filter(lead => lead.addedBy === parseInt(userId));
-  }
-  
-  // Filter by date range
-  if (period !== 'all') {
-    const { start, end } = getDateRange(period);
-    filteredLeads = filteredLeads.filter(lead => {
-      const leadDate = new Date(lead.createdAt);
-      return leadDate >= start && leadDate < end;
-    });
-  }
-  
-  return filteredLeads;
-};
-
 export const getLeadsAnalytics = async (period = 'all', userId = 'all') => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await delay(300);
   
-  const filteredLeads = filterLeads(period, userId);
-  
-  // Enhance leads with sales rep names
-  const leadsWithRepNames = filteredLeads.map(lead => {
-    const salesRep = salesReps.find(rep => rep.Id === lead.addedBy);
+  try {
+    const { getLeads } = await import("@/services/api/leadsService");
+    const { getSalesReps } = await import("@/services/api/salesRepService");
+    
+    const [leadsData, salesReps] = await Promise.all([
+      getLeads(),
+      getSalesReps()
+    ]);
+    
+    let filteredLeads = leadsData || [];
+    
+    // Filter by user
+    if (userId !== 'all') {
+      filteredLeads = filteredLeads.filter(lead => 
+        (lead.added_by || lead.addedBy) === parseInt(userId)
+      );
+    }
+    
+    // Filter by date range
+    if (period !== 'all') {
+      const { start, end } = getDateRange(period);
+      filteredLeads = filteredLeads.filter(lead => {
+        const leadDate = new Date(lead.created_at || lead.createdAt);
+        return leadDate >= start && leadDate < end;
+      });
+    }
+    
+    // Enhance leads with sales rep names
+    const leadsWithRepNames = filteredLeads.map(lead => {
+      const salesRep = salesReps.find(rep => rep.Id === (lead.added_by || lead.addedBy));
+      return {
+        ...lead,
+        addedByName: salesRep ? (salesRep.Name || salesRep.name) : 'Unknown'
+      };
+    });
+    
     return {
-      ...lead,
-      addedByName: salesRep ? salesRep.name : 'Unknown'
+      leads: leadsWithRepNames,
+      totalCount: filteredLeads.length
     };
-  });
-  
-  return {
-    leads: leadsWithRepNames,
-    totalCount: filteredLeads.length
-  };
+  } catch (error) {
+    console.error("Error fetching leads analytics:", error);
+    return {
+      leads: [],
+      totalCount: 0
+    };
+  }
 };
 
 export const getDailyLeadsChart = async (userId = 'all', days = 30) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 400));
+  await delay(400);
   
-  const now = new Date();
-  const chartData = [];
-  
-  // Generate data for the last X days
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    const dateStr = date.toISOString().split('T')[0];
+  try {
+    const { getLeads } = await import("@/services/api/leadsService");
+    const leadsData = await getLeads();
     
-    // Filter leads for this specific day and user
-    const dayLeads = leads.filter(lead => {
-      const leadDate = lead.createdAt.split('T')[0];
-      const userMatch = userId === 'all' || lead.addedBy === parseInt(userId);
-      return leadDate === dateStr && userMatch;
-    });
+    const now = new Date();
+    const chartData = [];
     
-    chartData.push({
-      date: dateStr,
-      count: dayLeads.length,
-      formattedDate: date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      })
-    });
+    // Generate data for the last X days
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      // Filter leads for this specific day and user
+      const dayLeads = leadsData.filter(lead => {
+        const leadDate = (lead.created_at || lead.createdAt || '').split('T')[0];
+        const userMatch = userId === 'all' || (lead.added_by || lead.addedBy) === parseInt(userId);
+        return leadDate === dateStr && userMatch;
+      });
+      
+      chartData.push({
+        date: dateStr,
+        count: dayLeads.length,
+        formattedDate: date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric' 
+        })
+      });
+    }
+    
+    return {
+      chartData,
+      categories: chartData.map(item => item.formattedDate),
+      series: [
+        {
+          name: 'New Leads',
+          data: chartData.map(item => item.count)
+        }
+      ]
+    };
+  } catch (error) {
+    console.error("Error fetching daily leads chart:", error);
+    return {
+      chartData: [],
+      categories: [],
+      series: []
+    };
   }
-  
-  return {
-    chartData,
-    categories: chartData.map(item => item.formattedDate),
-    series: [
-      {
-        name: 'New Leads',
-        data: chartData.map(item => item.count)
-      }
-    ]
-  };
 };
 
 export const getLeadsMetrics = async (userId = 'all') => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 250));
+  await delay(250);
   
-  const today = filterLeads('today', userId);
-  const yesterday = filterLeads('yesterday', userId);
-  const thisWeek = filterLeads('week', userId);
-  const thisMonth = filterLeads('month', userId);
-  
-  // Calculate trends
-  const todayCount = today.length;
-  const yesterdayCount = yesterday.length;
-  const weekCount = thisWeek.length;
-  const monthCount = thisMonth.length;
-  
-  // Calculate percentage changes
-  const todayTrend = yesterdayCount === 0 ? 100 : 
-    Math.round(((todayCount - yesterdayCount) / yesterdayCount) * 100);
-  
-  // Get status distribution for the filtered leads
-  const allFilteredLeads = filterLeads('all', userId);
-  const statusCounts = allFilteredLeads.reduce((acc, lead) => {
-    acc[lead.status] = (acc[lead.status] || 0) + 1;
-    return acc;
-  }, {});
-  
-  // Get category distribution
-  const categoryCounts = allFilteredLeads.reduce((acc, lead) => {
-    acc[lead.category] = (acc[lead.category] || 0) + 1;
-    return acc;
-  }, {});
-  
-  return {
-    metrics: {
-      today: {
-        count: todayCount,
-        trend: todayTrend,
-        label: 'Today'
+  try {
+    const { getLeads } = await import("@/services/api/leadsService");
+    const leadsData = await getLeads();
+    
+    const filterLeadsByPeriod = (period) => {
+      const { start, end } = getDateRange(period);
+      return leadsData.filter(lead => {
+        const leadDate = new Date(lead.created_at || lead.createdAt);
+        const userMatch = userId === 'all' || (lead.added_by || lead.addedBy) === parseInt(userId);
+        return leadDate >= start && leadDate < end && userMatch;
+      });
+    };
+    
+    const today = filterLeadsByPeriod('today');
+    const yesterday = filterLeadsByPeriod('yesterday');
+    const thisWeek = filterLeadsByPeriod('week');
+    const thisMonth = filterLeadsByPeriod('month');
+    
+    // Calculate trends
+    const todayCount = today.length;
+    const yesterdayCount = yesterday.length;
+    const weekCount = thisWeek.length;
+    const monthCount = thisMonth.length;
+    
+    // Calculate percentage changes
+    const todayTrend = yesterdayCount === 0 ? 100 : 
+      Math.round(((todayCount - yesterdayCount) / yesterdayCount) * 100);
+    
+    // Get status distribution for the filtered leads
+    const allFilteredLeads = userId === 'all' ? leadsData : 
+      leadsData.filter(lead => (lead.added_by || lead.addedBy) === parseInt(userId));
+    
+    const statusCounts = allFilteredLeads.reduce((acc, lead) => {
+      acc[lead.status] = (acc[lead.status] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Get category distribution
+    const categoryCounts = allFilteredLeads.reduce((acc, lead) => {
+      acc[lead.category] = (acc[lead.category] || 0) + 1;
+      return acc;
+    }, {});
+    
+    return {
+      metrics: {
+        today: {
+          count: todayCount,
+          trend: todayTrend,
+          label: 'Today'
+        },
+        yesterday: {
+          count: yesterdayCount,
+          label: 'Yesterday'
+        },
+        week: {
+          count: weekCount,
+          label: 'This Week'
+        },
+        month: {
+          count: monthCount,
+          label: 'This Month'
+        }
       },
-      yesterday: {
-        count: yesterdayCount,
-        label: 'Yesterday'
+      statusDistribution: statusCounts,
+      categoryDistribution: categoryCounts,
+      totalLeads: allFilteredLeads.length
+    };
+  } catch (error) {
+    console.error("Error fetching leads metrics:", error);
+    return {
+      metrics: {
+        today: { count: 0, trend: 0, label: 'Today' },
+        yesterday: { count: 0, label: 'Yesterday' },
+        week: { count: 0, label: 'This Week' },
+        month: { count: 0, label: 'This Month' }
       },
-      week: {
-        count: weekCount,
-        label: 'This Week'
-      },
-      month: {
-        count: monthCount,
-        label: 'This Month'
-      }
-    },
-    statusDistribution: statusCounts,
-    categoryDistribution: categoryCounts,
-    totalLeads: allFilteredLeads.length
-  };
+      statusDistribution: {},
+      categoryDistribution: {},
+      totalLeads: 0
+    };
+  }
 };
 
 export const getUserPerformance = async () => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await delay(300);
   
-  const userStats = salesReps.map(rep => {
-    const userLeads = leads.filter(lead => lead.addedBy === rep.Id);
-    const todayLeads = filterLeads('today', rep.Id.toString());
-    const weekLeads = filterLeads('week', rep.Id.toString());
-    const monthLeads = filterLeads('month', rep.Id.toString());
+  try {
+    const { getSalesReps } = await import("@/services/api/salesRepService");
+    const { getLeads } = await import("@/services/api/leadsService");
     
-    return {
-      ...rep,
-      totalLeads: userLeads.length,
-      todayLeads: todayLeads.length,
-      weekLeads: weekLeads.length,
-      monthLeads: monthLeads.length,
-      conversionRate: rep.meetingsBooked > 0 ? 
-        Math.round((rep.dealsClosed / rep.meetingsBooked) * 100) : 0
-    };
-  });
-  
-  return userStats.sort((a, b) => b.totalLeads - a.totalLeads);
+    const [salesReps, leadsData] = await Promise.all([
+      getSalesReps(),
+      getLeads()
+    ]);
+    
+    const userStats = salesReps.map(rep => {
+      const userLeads = leadsData.filter(lead => (lead.added_by || lead.addedBy) === rep.Id);
+      
+      const filterLeadsByPeriod = (period) => {
+        const { start, end } = getDateRange(period);
+        return userLeads.filter(lead => {
+          const leadDate = new Date(lead.created_at || lead.createdAt);
+          return leadDate >= start && leadDate < end;
+        });
+      };
+      
+      const todayLeads = filterLeadsByPeriod('today');
+      const weekLeads = filterLeadsByPeriod('week');
+      const monthLeads = filterLeadsByPeriod('month');
+      
+      return {
+        ...rep,
+        name: rep.Name || rep.name,
+        totalLeads: userLeads.length,
+        todayLeads: todayLeads.length,
+        weekLeads: weekLeads.length,
+        monthLeads: monthLeads.length,
+        conversionRate: (rep.meetings_booked || rep.meetingsBooked) > 0 ? 
+          Math.round(((rep.deals_closed || rep.dealsClosed) / (rep.meetings_booked || rep.meetingsBooked)) * 100) : 0
+      };
+    });
+    
+    return userStats.sort((a, b) => b.totalLeads - a.totalLeads);
+  } catch (error) {
+    console.error("Error fetching user performance:", error);
+    return [];
+  }
 };
