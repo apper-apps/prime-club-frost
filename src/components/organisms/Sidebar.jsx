@@ -163,9 +163,9 @@ return (
         <div className="flex items-center">
           <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-semibold">U</span>
-          </div>
+</div>
           {!isCollapsed && (
-            <div className="ml-3">
+            <div className="ml-3 text-left">
               <p className="text-sm font-medium text-gray-900">User</p>
               <p className="text-xs text-gray-500">Sales Manager</p>
             </div>
