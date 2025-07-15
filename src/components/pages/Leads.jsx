@@ -747,14 +747,14 @@ const handleSort = (field) => {
             </div>
         </div>
     </Card>
-    {/* Leads Table */}
+{/* Leads Table */}
     <Card className="overflow-hidden">
-        {filteredAndSortedData.length === 0 ? <Empty
+        {data.length === 0 ? <Empty
             title="No leads found"
             description="Add your first lead to get started with lead management"
             actionText="Add Lead"
             onAction={() => setShowAddForm(true)}
-icon="Building2" /> : <div className="relative">
+            icon="Building2" /> : <div className="relative">
             {/* Top scrollbar for easier horizontal navigation */}
             <div 
               ref={setTopScrollbarRef}
