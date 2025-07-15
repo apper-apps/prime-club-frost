@@ -9,6 +9,7 @@ import Input from "@/components/atoms/Input";
 import Empty from "@/components/ui/Empty";
 import Error from "@/components/ui/Error";
 import Loading from "@/components/ui/Loading";
+import Hotlist from "@/components/pages/Hotlist";
 import SearchBar from "@/components/molecules/SearchBar";
 import { createLead, deleteLead, getLeads, updateLead } from "@/services/api/leadsService";
 import { createDeal, getDeals, updateDeal } from "@/services/api/dealsService";
@@ -64,22 +65,8 @@ const loadLeads = async () => {
       setError(null);
       const response = await getLeads();
       
-      // Handle both old format (direct array) and new format (object with leads and deduplication info)
-      if (response.leads) {
-        setData(response.leads);
-        
-        // Show deduplication result if duplicates were removed
-        if (response.deduplicationResult) {
-          const { duplicateCount, duplicatesRemoved } = response.deduplicationResult;
-          toast.info(
-            `Automatically removed ${duplicateCount} duplicate website URL${duplicateCount > 1 ? 's' : ''}`,
-            { autoClose: 5000 }
-          );
-        }
-      } else {
-        // Fallback for old format
-        setData(response);
-      }
+      // Service already returns proper array format with database field names
+      setData(response || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -118,12 +105,12 @@ const handleStatusChange = async (leadId, newStatus) => {
           if (existingDeal) {
             // Update existing deal to the new stage
             await updateDeal(existingDeal.Id, { stage: targetStage });
-toast.success(`Lead status updated and deal moved to ${targetStage} stage!`);
+            toast.success(`Lead status updated and deal moved to ${targetStage} stage!`);
           } else {
             // Create new deal in the target stage
             const dealData = {
-              name: `${updatedLead.websiteUrl} Deal`,
-              leadName: updatedLead.websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''),
+              name: `${updatedLead.website_url} Deal`,
+              leadName: updatedLead.website_url.replace(/^https?:\/\//, '').replace(/\/$/, ''),
               leadId: leadId.toString(),
               value: updatedLead.arr || 0,
               stage: targetStage,
@@ -281,14 +268,14 @@ const handleFieldUpdate = async (leadId, field, value) => {
 const addEmptyRow = () => {
     const newEmptyRow = {
       Id: nextTempId,
-websiteUrl: "",
-      teamSize: "1-3", 
+      website_url: "",
+      team_size: "1-3", 
       arr: 0,
       category: "Accounting Software",
-      linkedinUrl: "",
+      linkedin_url: "",
       status: "Keep an Eye",
-      fundingType: "Bootstrapped",
-      followUpDate: "",
+      funding_type: "Bootstrapped",
+      follow_up_date: "",
       isEmptyRow: true
     };
     setEmptyRows(prev => [...prev, newEmptyRow]);
@@ -341,8 +328,8 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
     )
   );
 
-  // If websiteUrl is provided, create lead(s)
-  if (field === 'websiteUrl' && value.trim()) {
+// If website_url is provided, create lead(s)
+  if (field === 'website_url' && value.trim()) {
     const emptyRow = emptyRows.find(row => row.Id === tempId);
     if (emptyRow) {
       try {
@@ -357,13 +344,13 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
         if (urls.length === 1) {
           // Single URL - existing behavior
           const leadData = {
-            websiteUrl: urls[0],
-            teamSize: emptyRow.teamSize,
+            website_url: urls[0],
+            team_size: emptyRow.team_size,
             arr: emptyRow.arr,
             category: emptyRow.category,
-            linkedinUrl: emptyRow.linkedinUrl || `https://linkedin.com/company/${urls[0].replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
+            linkedin_url: emptyRow.linkedin_url || `https://linkedin.com/company/${urls[0].replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
             status: emptyRow.status,
-            fundingType: emptyRow.fundingType
+            funding_type: emptyRow.funding_type
           };
           
           const newLead = await createLead(leadData);
@@ -381,13 +368,13 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
           for (const url of urls) {
             try {
               const leadData = {
-                websiteUrl: url,
-                teamSize: emptyRow.teamSize,
+                website_url: url,
+                team_size: emptyRow.team_size,
                 arr: emptyRow.arr,
                 category: emptyRow.category,
-                linkedinUrl: emptyRow.linkedinUrl || `https://linkedin.com/company/${url.replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
+                linkedin_url: emptyRow.linkedin_url || `https://linkedin.com/company/${url.replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
                 status: emptyRow.status,
-                fundingType: emptyRow.fundingType
+                funding_type: emptyRow.funding_type
               };
               
               const newLead = await createLead(leadData);
@@ -422,10 +409,10 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
   }
 };
 
-  // Debounced version for non-submission updates
+// Debounced version for non-submission updates
   const handleEmptyRowUpdateDebounced = (tempId, field, value) => {
-    // Update UI immediately for non-websiteUrl fields
-    if (field !== 'websiteUrl') {
+    // Update UI immediately for non-website_url fields
+    if (field !== 'website_url') {
       setEmptyRows(prev => 
         prev.map(row => 
           row.Id === tempId ? { ...row, [field]: field === 'arr' ? Number(value) * 1000000 : value } : row
@@ -599,14 +586,14 @@ const getStatusColor = (status) => {
 const filteredAndSortedData = data
     .filter(lead => {
       const matchesSearch = !searchTerm || 
-        lead.websiteUrl.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.website_url.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lead.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.teamSize.toLowerCase().includes(searchTerm.toLowerCase());
+        lead.team_size.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = statusFilter === "all" || lead.status === statusFilter;
-      const matchesFunding = fundingFilter === "all" || lead.fundingType === fundingFilter;
+      const matchesFunding = fundingFilter === "all" || lead.funding_type === fundingFilter;
       const matchesCategory = categoryFilter === "all" || lead.category === categoryFilter;
-      const matchesTeamSize = teamSizeFilter === "all" || lead.teamSize === teamSizeFilter;
+      const matchesTeamSize = teamSizeFilter === "all" || lead.team_size === teamSizeFilter;
       
       return matchesSearch && matchesStatus && matchesFunding && matchesCategory && matchesTeamSize;
     })
@@ -619,15 +606,15 @@ const filteredAndSortedData = data
         bValue = Number(bValue);
       }
       
-      if (sortBy === "createdAt") {
+      if (sortBy === "created_at") {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
       }
       
-      if (sortBy === "websiteUrl") {
-        // Sort websiteUrl by creation date (newest first) instead of alphabetical
-        aValue = new Date(a.createdAt);
-        bValue = new Date(b.createdAt);
+      if (sortBy === "website_url") {
+        // Sort website_url by creation date (newest first) instead of alphabetical
+        aValue = new Date(a.created_at);
+        bValue = new Date(b.created_at);
       }
       
       if (sortOrder === "asc") {
@@ -749,7 +736,7 @@ const handleSort = (field) => {
     </Card>
 {/* Leads Table */}
     <Card className="overflow-hidden">
-        {data.length === 0 && emptyRows.every(row => !row.websiteUrl || row.websiteUrl.trim() === '') ? <Empty
+{data.length === 0 && emptyRows.every(row => !row.website_url || row.website_url.trim() === '') ? <Empty
             title="No leads found"
             description="Add your first lead to get started with lead management"
             actionText="Add Lead"
@@ -779,18 +766,18 @@ const handleSort = (field) => {
                                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                 />
                             </th>
-                            <th
+<th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                                 <button
-                                    onClick={() => handleSort("websiteUrl")}
+                                    onClick={() => handleSort("website_url")}
                                     className="flex items-center gap-1 hover:text-gray-700">Website URL
                                                             <ApperIcon name="ArrowUpDown" size={12} />
                                 </button>
                             </th>
-                            <th
+<th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
                                 <button
-                                    onClick={() => handleSort("teamSize")}
+                                    onClick={() => handleSort("team_size")}
                                     className="flex items-center gap-1 hover:text-gray-700">Team Size
                                                             <ApperIcon name="ArrowUpDown" size={12} />
                                 </button>
@@ -837,30 +824,30 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 opacity-50"
                                     />
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap min-w-[200px]">
+<td className="px-6 py-4 whitespace-nowrap min-w-[200px]">
                                     <Input
                                         type="url"
-                                        value={emptyRow.websiteUrl}
+                                        value={emptyRow.website_url}
                                         detectUrlPrefix={true}
                                         urlPrefix="https://"
                                         onChange={e => setEmptyRows(prev => prev.map(row => row.Id === emptyRow.Id ? {
                                             ...row,
-                                            websiteUrl: e.target.value
+                                            website_url: e.target.value
                                         } : row))}
-                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "websiteUrl", e.target.value)}
+                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "website_url", e.target.value)}
                                         onKeyDown={e => {
                                             if (e.key === "Enter") {
-                                                handleEmptyRowUpdate(emptyRow.Id, "websiteUrl", e.target.value);
+                                                handleEmptyRowUpdate(emptyRow.Id, "website_url", e.target.value);
                                             }
                                         }}
                                         placeholder="Enter website URL..."
                                         className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 text-primary-600 font-medium placeholder-gray-400" />
                                 </td>
                                 <td
-                                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
+className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                     <select
-                                        value={emptyRow.teamSize}
-                                        onChange={e => handleEmptyRowUpdate(emptyRow.Id, "teamSize", e.target.value)}
+                                        value={emptyRow.team_size}
+                                        onChange={e => handleEmptyRowUpdate(emptyRow.Id, "team_size", e.target.value)}
                                         className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full text-gray-500">
                                         {teamSizeOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                     </select>
@@ -893,14 +880,14 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                     />
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap min-w-[100px]">
-                                    <Input
+<Input
                                         type="url"
-                                        value={emptyRow.linkedinUrl}
-                                        onChange={e => handleEmptyRowUpdateDebounced(emptyRow.Id, "linkedinUrl", e.target.value)}
-                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "linkedinUrl", e.target.value)}
+                                        value={emptyRow.linkedin_url}
+                                        onChange={e => handleEmptyRowUpdateDebounced(emptyRow.Id, "linkedin_url", e.target.value)}
+                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "linkedin_url", e.target.value)}
                                         onKeyDown={e => {
                                             if (e.key === "Enter") {
-                                                handleEmptyRowUpdate(emptyRow.Id, "linkedinUrl", e.target.value);
+                                                handleEmptyRowUpdate(emptyRow.Id, "linkedin_url", e.target.value);
                                             }
                                         }}
                                         placeholder="LinkedIn URL..."
@@ -923,28 +910,28 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap min-w-[140px]">
                                     <div className="relative">
-                                        <Badge
-                                            variant={emptyRow.fundingType === "Series C" ? "primary" : "default"}
+<Badge
+                                            variant={emptyRow.funding_type === "Series C" ? "primary" : "default"}
                                             className="cursor-pointer hover:shadow-md transition-shadow opacity-60">
-                                            {emptyRow.fundingType}
+                                            {emptyRow.funding_type}
                                         </Badge>
                                         <select
-                                            value={emptyRow.fundingType}
-                                            onChange={e => handleEmptyRowUpdate(emptyRow.Id, "fundingType", e.target.value)}
+                                            value={emptyRow.funding_type}
+                                            onChange={e => handleEmptyRowUpdate(emptyRow.Id, "funding_type", e.target.value)}
                                             className="absolute inset-0 opacity-0 cursor-pointer w-full">
                                             {fundingTypeOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                         </select>
 </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap min-w-[130px]">
-                                    <Input
+<Input
                                         type="date"
-                                        value={emptyRow.followUpDate ? emptyRow.followUpDate.split('T')[0] : ''}
-                                        onChange={e => handleEmptyRowUpdateDebounced(emptyRow.Id, "followUpDate", e.target.value ? new Date(e.target.value).toISOString() : '')}
-                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "followUpDate", e.target.value ? new Date(e.target.value).toISOString() : '')}
+                                        value={emptyRow.follow_up_date ? emptyRow.follow_up_date.split('T')[0] : ''}
+                                        onChange={e => handleEmptyRowUpdateDebounced(emptyRow.Id, "follow_up_date", e.target.value ? new Date(e.target.value).toISOString() : '')}
+                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "follow_up_date", e.target.value ? new Date(e.target.value).toISOString() : '')}
                                         onKeyDown={e => {
                                             if (e.key === "Enter") {
-                                                handleEmptyRowUpdate(emptyRow.Id, "followUpDate", e.target.value ? new Date(e.target.value).toISOString() : '');
+                                                handleEmptyRowUpdate(emptyRow.Id, "follow_up_date", e.target.value ? new Date(e.target.value).toISOString() : '');
                                             }
                                         }}
                                         className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
@@ -976,35 +963,35 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                 />
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap min-w-[200px]">
+<td className="px-6 py-4 whitespace-nowrap min-w-[200px]">
                                 <Input
                                     type="url"
-                                    value={lead.websiteUrl}
+                                    value={lead.website_url}
                                     detectUrlPrefix={true}
                                     urlPrefix="https://"
                                     onChange={e => {
                                         setData(prevData => prevData.map(l => l.Id === lead.Id ? {
                                             ...l,
-                                            websiteUrl: e.target.value
+                                            website_url: e.target.value
                                         } : l));
 
-                                        handleFieldUpdateDebounced(lead.Id, "websiteUrl", e.target.value);
+                                        handleFieldUpdateDebounced(lead.Id, "website_url", e.target.value);
                                     }}
-                                    onBlur={e => handleFieldUpdate(lead.Id, "websiteUrl", e.target.value)}
+                                    onBlur={e => handleFieldUpdate(lead.Id, "website_url", e.target.value)}
                                     onKeyDown={e => {
                                         if (e.key === "Enter") {
-                                            handleFieldUpdate(lead.Id, "websiteUrl", e.target.value);
+                                            handleFieldUpdate(lead.Id, "website_url", e.target.value);
                                         }
                                     }}
                                     className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 text-primary-600 font-medium" />
                             </td>
-                            <td
+<td
                                 className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                 <select
-                                    value={lead.teamSize}
-                                    onChange={e => handleFieldUpdate(lead.Id, "teamSize", e.target.value)}
+                                    value={lead.team_size}
+                                    onChange={e => handleFieldUpdate(lead.Id, "team_size", e.target.value)}
                                     className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full">
-                                    {teamSizeOptions.map(option => <option key={option} value={option}>{option}</option>)}
+{teamSizeOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                 </select>
                             </td>
                             <td
@@ -1041,28 +1028,28 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                             </td>
 <td className="px-6 py-4 whitespace-nowrap min-w-[100px]">
                                 <div className="flex items-center gap-2">
-                                    <Input
+<Input
                                         type="url"
-                                        value={lead.linkedinUrl}
+                                        value={lead.linkedin_url}
                                         onChange={e => {
                                             setData(prevData => prevData.map(l => l.Id === lead.Id ? {
                                                 ...l,
-                                                linkedinUrl: e.target.value
+                                                linkedin_url: e.target.value
                                             } : l));
 
-                                            handleFieldUpdateDebounced(lead.Id, "linkedinUrl", e.target.value);
+                                            handleFieldUpdateDebounced(lead.Id, "linkedin_url", e.target.value);
                                         }}
-                                        onBlur={e => handleFieldUpdate(lead.Id, "linkedinUrl", e.target.value)}
+                                        onBlur={e => handleFieldUpdate(lead.Id, "linkedin_url", e.target.value)}
                                         onKeyDown={e => {
                                             if (e.key === "Enter") {
-                                                handleFieldUpdate(lead.Id, "linkedinUrl", e.target.value);
+                                                handleFieldUpdate(lead.Id, "linkedin_url", e.target.value);
                                             }
                                         }}
                                         placeholder="LinkedIn URL..."
                                         className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm flex-1" />
-                                    {lead.linkedinUrl && (
+{lead.linkedin_url && (
                                         <a
-                                            href={lead.linkedinUrl}
+                                            href={lead.linkedin_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-primary-600 hover:text-primary-800 flex-shrink-0 p-1 hover:bg-gray-100 rounded"
@@ -1089,40 +1076,40 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap min-w-[140px]">
                                 <div className="relative">
-                                    <Badge
-                                        variant={lead.fundingType === "Series C" ? "primary" : "default"}
+<Badge
+                                        variant={lead.funding_type === "Series C" ? "primary" : "default"}
                                         className="cursor-pointer hover:shadow-md transition-shadow">
-                                        {lead.fundingType}
+                                        {lead.funding_type}
                                     </Badge>
                                     <select
-                                        value={lead.fundingType}
-                                        onChange={e => handleFieldUpdate(lead.Id, "fundingType", e.target.value)}
+                                        value={lead.funding_type}
+                                        onChange={e => handleFieldUpdate(lead.Id, "funding_type", e.target.value)}
                                         className="absolute inset-0 opacity-0 cursor-pointer w-full">
                                         {fundingTypeOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                     </select>
 </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap min-w-[130px]">
-                                <Input
+<Input
                                     type="date"
-                                    value={lead.followUpDate ? lead.followUpDate.split('T')[0] : ''}
+                                    value={lead.follow_up_date ? lead.follow_up_date.split('T')[0] : ''}
                                     onChange={e => {
                                         const newDate = e.target.value ? new Date(e.target.value).toISOString() : '';
                                         setData(prevData => prevData.map(l => l.Id === lead.Id ? {
                                             ...l,
-                                            followUpDate: newDate
+                                            follow_up_date: newDate
                                         } : l));
 
-                                        handleFieldUpdateDebounced(lead.Id, "followUpDate", newDate);
+                                        handleFieldUpdateDebounced(lead.Id, "follow_up_date", newDate);
                                     }}
                                     onBlur={e => {
                                         const newDate = e.target.value ? new Date(e.target.value).toISOString() : '';
-                                        handleFieldUpdate(lead.Id, "followUpDate", newDate);
+                                        handleFieldUpdate(lead.Id, "follow_up_date", newDate);
                                     }}
                                     onKeyDown={e => {
                                         if (e.key === "Enter") {
                                             const newDate = e.target.value ? new Date(e.target.value).toISOString() : '';
-                                            handleFieldUpdate(lead.Id, "followUpDate", newDate);
+                                            handleFieldUpdate(lead.Id, "follow_up_date", newDate);
                                         }
                                     }}
                                     className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full text-sm" />
@@ -1130,8 +1117,8 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                             <td
                                 className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px]">
                                 <div className="flex items-center">
-                                    <ApperIcon name="User" size={14} className="mr-2 text-gray-400" />
-                                    <span>{lead.addedByName || "Unknown"}</span>
+<ApperIcon name="User" size={14} className="mr-2 text-gray-400" />
+                                    <span>{lead.added_by_name || "Unknown"}</span>
                                 </div>
                             </td>
                             <td
@@ -1331,14 +1318,14 @@ const SearchableSelect = ({ value, onChange, options, placeholder = "Select...",
 };
 
 const AddLeadModal = ({ onClose, onSubmit, categoryOptions, onCreateCategory }) => {
-  const [formData, setFormData] = useState({
-    websiteUrl: "",
-    teamSize: "1-3",
+const [formData, setFormData] = useState({
+    website_url: "",
+    team_size: "1-3",
     arr: "",
     category: "",
-    linkedinUrl: "",
+    linkedin_url: "",
     status: "Keep an Eye",
-    fundingType: "Bootstrapped",
+    funding_type: "Bootstrapped",
     edition: "Select Edition"
   });
 
@@ -1365,12 +1352,12 @@ const AddLeadModal = ({ onClose, onSubmit, categoryOptions, onCreateCategory }) 
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Website URL
 </label>
-            <Input
+<Input
               type="url"
-              value={formData.websiteUrl}
+              value={formData.website_url}
               detectUrlPrefix={true}
               urlPrefix="https://"
-              onChange={(e) => setFormData({...formData, websiteUrl: e.target.value})}
+              onChange={(e) => setFormData({...formData, website_url: e.target.value})}
               placeholder="https://example.com"
               required
             />
@@ -1380,9 +1367,9 @@ const AddLeadModal = ({ onClose, onSubmit, categoryOptions, onCreateCategory }) 
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Team Size
 </label>
-            <select
-              value={formData.teamSize}
-              onChange={(e) => setFormData({...formData, teamSize: e.target.value})}
+<select
+              value={formData.team_size}
+              onChange={(e) => setFormData({...formData, team_size: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
 <option value="1-3">1-3</option>
@@ -1426,10 +1413,10 @@ const AddLeadModal = ({ onClose, onSubmit, categoryOptions, onCreateCategory }) 
             <label className="block text-sm font-medium text-gray-700 mb-1">
               LinkedIn URL
             </label>
-            <Input
+<Input
               type="url"
-              value={formData.linkedinUrl}
-              onChange={(e) => setFormData({...formData, linkedinUrl: e.target.value})}
+              value={formData.linkedin_url}
+              onChange={(e) => setFormData({...formData, linkedin_url: e.target.value})}
               placeholder="https://linkedin.com/company/example"
               required
             />
@@ -1465,9 +1452,9 @@ const AddLeadModal = ({ onClose, onSubmit, categoryOptions, onCreateCategory }) 
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Funding Type
             </label>
-            <select
-              value={formData.fundingType}
-              onChange={(e) => setFormData({...formData, fundingType: e.target.value})}
+<select
+              value={formData.funding_type}
+              onChange={(e) => setFormData({...formData, funding_type: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="Bootstrapped">Bootstrapped</option>
@@ -1511,14 +1498,14 @@ const AddLeadModal = ({ onClose, onSubmit, categoryOptions, onCreateCategory }) 
 };
 
 const EditLeadModal = ({ lead, onClose, onSubmit, categoryOptions, onCreateCategory }) => {
-  const [formData, setFormData] = useState({
-    websiteUrl: lead.websiteUrl,
-    teamSize: lead.teamSize,
+const [formData, setFormData] = useState({
+    website_url: lead.website_url,
+    team_size: lead.team_size,
     arr: lead.arr.toString(),
     category: lead.category,
-    linkedinUrl: lead.linkedinUrl,
+    linkedin_url: lead.linkedin_url,
     status: lead.status,
-    fundingType: lead.fundingType,
+    funding_type: lead.funding_type,
     edition: lead.edition || "Select Edition"
   });
 
@@ -1544,14 +1531,14 @@ const EditLeadModal = ({ lead, onClose, onSubmit, categoryOptions, onCreateCateg
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Website URL
                                 </label>
-                <Input
+<Input
                     type="url"
-                    value={formData.websiteUrl}
+                    value={formData.website_url}
                     detectUrlPrefix={true}
                     urlPrefix="https://"
                     onChange={e => setFormData({
                         ...formData,
-                        websiteUrl: e.target.value
+                        website_url: e.target.value
                     })}
 required />
             </div>
@@ -1559,11 +1546,11 @@ required />
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Team Size
                 </label>
-                <select
-                        value={formData.teamSize}
+<select
+                        value={formData.team_size}
                         onChange={e => setFormData({
                             ...formData,
-                            teamSize: e.target.value
+                            team_size: e.target.value
 })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
 <option value="1-3">1-3</option>
@@ -1608,12 +1595,12 @@ required />
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL
                                     </label>
-                    <Input
+<Input
                         type="url"
-                        value={formData.linkedinUrl}
+                        value={formData.linkedin_url}
                         onChange={e => setFormData({
                             ...formData,
-                            linkedinUrl: e.target.value
+                            linkedin_url: e.target.value
                         })}
 required />
             </div>
@@ -1648,11 +1635,11 @@ required />
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Funding Type
                                     </label>
-                    <select
-                        value={formData.fundingType}
+<select
+                        value={formData.funding_type}
                         onChange={e => setFormData({
                             ...formData,
-                            fundingType: e.target.value
+                            funding_type: e.target.value
                         })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="Bootstrapped">Bootstrapped</option>
