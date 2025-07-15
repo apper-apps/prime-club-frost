@@ -749,7 +749,7 @@ const handleSort = (field) => {
     </Card>
 {/* Leads Table */}
     <Card className="overflow-hidden">
-        {data.length === 0 ? <Empty
+        {data.length === 0 && emptyRows.every(row => !row.websiteUrl || row.websiteUrl.trim() === '') ? <Empty
             title="No leads found"
             description="Add your first lead to get started with lead management"
             actionText="Add Lead"
