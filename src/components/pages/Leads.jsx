@@ -1337,18 +1337,18 @@ const [formData, setFormData] = useState({
     });
   };
 
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between p-6 border-b">
+return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-6 border-b flex-shrink-0">
           <h3 className="text-lg font-semibold">Add New Lead</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <ApperIcon name="X" size={20} />
           </button>
         </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
+<div className="overflow-y-auto max-h-[70vh] flex-1">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Website URL
 </label>
@@ -1490,8 +1490,9 @@ const [formData, setFormData] = useState({
             <Button type="submit">
               Add Lead
             </Button>
-          </div>
-        </form>
+</div>
+          </form>
+        </div>
       </div>
     </div>
   );
