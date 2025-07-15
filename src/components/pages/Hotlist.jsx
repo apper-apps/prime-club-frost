@@ -31,19 +31,18 @@ const Hotlist = () => {
     loadLeads();
   }, []);
 
-  const loadLeads = async () => {
+const loadLeads = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await getLeads();
       
-      // Filter only hotlist leads
-      const hotlistLeads = response.leads.filter(lead => lead.status === 'Hotlist');
+      // Filter only hotlist leads - response is already an array
+      const hotlistLeads = response.filter(lead => lead.status === 'Hotlist');
       setLeads(hotlistLeads);
       
-      if (response.deduplicationResult) {
-        toast.info(`${response.deduplicationResult.duplicateCount} duplicate leads were automatically removed`);
-      }
+      // Note: deduplicationResult is not available in the current service response structure
+      // This feature would need to be implemented in the service layer if required
     } catch (err) {
       console.error('Error loading hotlist leads:', err);
       setError(err.message || 'Failed to load hotlist leads');
