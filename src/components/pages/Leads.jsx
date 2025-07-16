@@ -736,12 +736,16 @@ const handleSort = (field) => {
     </Card>
 {/* Leads Table */}
     <Card className="overflow-hidden">
-{data.length === 0 && emptyRows.every(row => !row.website_url || row.website_url.trim() === '') ? <Empty
-            title="No leads found"
-            description="Add your first lead to get started with lead management"
-            actionText="Add Lead"
-            onAction={() => setShowAddForm(true)}
-            icon="Building2" /> : <div className="relative">
+      {data.length === 0 && emptyRows.length === 0 ? (
+        <Empty
+          title="No leads found"
+          description="Add your first lead to get started with lead management"
+          actionText="Add Lead"
+          onAction={() => setShowAddForm(true)}
+          icon="Building2"
+        />
+      ) : (
+        <div className="relative">
             {/* Top scrollbar for easier horizontal navigation */}
             <div 
               ref={setTopScrollbarRef}
@@ -1139,9 +1143,10 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                         </tr>)}
                     </tbody>
                 </table>
-            </div>
-</div>}
-</Card>
+</div>
+        </div>
+      )}
+    </Card>
     
     {/* Bulk Actions */}
     {selectedLeads.length > 0 && (
