@@ -1345,9 +1345,8 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                           <ApperIcon name="Linkedin" size={16} />
                                       </a>
                                   )}
-                                </div>
+</div>
                             </td>
-</td>
                             <td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
                                 <div className="flex items-center gap-2">
                                   <div className="relative">
