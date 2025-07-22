@@ -19,7 +19,9 @@ import Pipeline from "@/components/pages/Pipeline";
 import Dashboard from "@/components/pages/Dashboard";
 import Leads from "@/components/pages/Leads";
 import Hotlist from "@/components/pages/Hotlist";
-
+import Contacts from "@/components/pages/Contacts";
+import Teams from "@/components/pages/Teams";
+import WebsiteUrlReport from "@/components/pages/WebsiteUrlReport";
 // Create auth context
 export const AuthContext = createContext(null);
 
@@ -48,22 +50,43 @@ class ErrorBoundary extends Component {
     };
   }
 
-  componentDidCatch(error, errorInfo) {
+componentDidCatch(error, errorInfo) {
     // Enhanced error logging with categorization
+    let errorMessage = 'Unknown error';
+    let errorStack = '';
+    
+    // Properly extract error information
+    if (error) {
+      if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object') {
+        try {
+          errorMessage = JSON.stringify(error);
+        } catch (e) {
+          errorMessage = error.toString();
+        }
+      }
+      errorStack = error.stack || '';
+    }
+    
     const errorDetails = {
-      message: error.message,
-      stack: error.stack,
+      message: errorMessage,
+      stack: errorStack,
       componentStack: errorInfo.componentStack,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
-      url: window.location.href
+      url: window.location.href,
+      errorType: typeof error,
+      errorConstructor: error?.constructor?.name || 'Unknown'
     };
 
     // Handle canvas and viewport errors from external scripts
-    if (error.message?.includes('canvas') || 
-        error.message?.includes('viewport') || 
-        error.message?.includes('drawImage') ||
-        error.message?.includes('InvalidStateError')) {
+    if (errorMessage?.includes('canvas') || 
+        errorMessage?.includes('viewport') || 
+        errorMessage?.includes('drawImage') ||
+        errorMessage?.includes('InvalidStateError')) {
       console.warn('External script canvas error caught:', {
         ...errorDetails,
         type: 'CANVAS_ERROR',
@@ -79,9 +102,12 @@ class ErrorBoundary extends Component {
       return;
     }
 
-    // Log other application errors
-    console.error('Application error:', errorDetails);
-    this.setState({ errorInfo });
+    // Log other application errors with full details
+    console.error('Application error caught by ErrorBoundary:', errorDetails);
+    this.setState({ 
+      errorInfo,
+      error: { ...error, message: errorMessage, stack: errorStack }
+    });
   }
 
   handleRetry = () => {
@@ -126,14 +152,27 @@ class ErrorBoundary extends Component {
                 Reload Page
               </button>
             </div>
-            {import.meta.env?.DEV && this.state.error && (
+{import.meta.env?.DEV && this.state.error && (
               <details className="mt-4 text-left">
                 <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
-                  Error Details
+                  Error Details (Development)
                 </summary>
-                <pre className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
-                  {this.state.error.message}
-                </pre>
+                <div className="mt-2 space-y-2">
+                  <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
+                    <strong>Message:</strong> {this.state.error.message || 'No error message'}
+                  </div>
+                  {this.state.error.stack && (
+                    <pre className="text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto max-h-32">
+                      {this.state.error.stack}
+                    </pre>
+                  )}
+                  {this.state.errorInfo?.componentStack && (
+                    <pre className="text-xs text-gray-600 bg-gray-50 p-2 rounded overflow-auto max-h-24">
+                      <strong>Component Stack:</strong>
+                      {this.state.errorInfo.componentStack}
+                    </pre>
+                  )}
+                </div>
               </details>
             )}
           </div>
@@ -219,9 +258,11 @@ function App() {
           dispatch(clearUser());
         }
       },
-      onError: function(error) {
+onError: function(error) {
         console.error("Authentication failed:", error);
         setIsInitialized(true);
+        // Clear any authentication state on error
+        dispatch(clearUser());
       }
     });
   }, []);
@@ -343,6 +384,39 @@ function App() {
                 transition={{ duration: 0.3 }}
               >
                 <Leaderboard />
+              </motion.div>
+            </Layout>
+          } />
+<Route path="/contacts" element={
+            <Layout>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Contacts />
+              </motion.div>
+            </Layout>
+          } />
+          <Route path="/teams" element={
+            <Layout>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Teams />
+              </motion.div>
+            </Layout>
+          } />
+          <Route path="/reports/website-urls" element={
+            <Layout>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <WebsiteUrlReport />
               </motion.div>
             </Layout>
           } />
