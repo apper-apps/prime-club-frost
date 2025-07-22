@@ -34,11 +34,60 @@ const Leads = () => {
   const [topScrollbarRef, setTopScrollbarRef] = useState(null);
   const [tableScrollbarRef, setTableScrollbarRef] = useState(null);
   
-  // Auto-save system state
+// Auto-save system state
   const [editingStates, setEditingStates] = useState({}); // Track which cells are being edited
   const [optimisticData, setOptimisticData] = useState({}); // Store optimistic updates
   const [pendingValidation, setPendingValidation] = useState({}); // Track validation errors
   const [savingStates, setSavingStates] = useState({}); // Track which rows are being saved
+
+  // Validation functions
+  const validateField = (field, value, leadData = {}) => {
+    const errors = [];
+    
+    switch (field) {
+      case 'Name':
+        if (!value || (value && value.toString().trim() === '')) {
+          errors.push('Name is required');
+        }
+        break;
+      case 'website_url':
+        if (!value || (value && value.toString().trim() === '')) {
+          errors.push('Website URL is required');
+        } else if (value && !value.toString().match(/^https?:\/\/.+\..+/)) {
+          errors.push('Please enter a valid website URL');
+        }
+        break;
+      case 'email':
+        if (value && value.toString && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toString())) {
+          errors.push('Please enter a valid email address');
+        }
+        break;
+    }
+    
+    return errors;
+  };
+
+  const validateRow = (leadData) => {
+    const allErrors = {};
+    const requiredFields = ['Name', 'website_url'];
+    
+    requiredFields.forEach(field => {
+      const fieldErrors = validateField(field, leadData[field], leadData);
+      if (fieldErrors.length > 0) {
+        allErrors[field] = fieldErrors;
+      }
+    });
+    
+    // Validate optional fields if they have values
+    if (leadData.email) {
+      const emailErrors = validateField('email', leadData.email, leadData);
+      if (emailErrors.length > 0) {
+        allErrors.email = emailErrors;
+      }
+    }
+    
+    return allErrors;
+  };
 
   useEffect(() => {
     loadLeads();
@@ -232,55 +281,6 @@ const handleUpdateLead = async (leadId, updates) => {
 
   const clearSelection = () => {
     setSelectedLeads([]);
-  };
-
-// Validation functions
-const validateField = (field, value, leadData = {}) => {
-    const errors = [];
-    
-    switch (field) {
-      case 'Name':
-        if (!value || (value && value.toString().trim() === '')) {
-          errors.push('Name is required');
-        }
-        break;
-      case 'website_url':
-        if (!value || (value && value.toString().trim() === '')) {
-          errors.push('Website URL is required');
-        } else if (value && !value.toString().match(/^https?:\/\/.+\..+/)) {
-          errors.push('Please enter a valid website URL');
-        }
-        break;
-      case 'email':
-        if (value && value.toString && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toString())) {
-          errors.push('Please enter a valid email address');
-        }
-        break;
-    }
-    
-    return errors;
-  };
-
-  const validateRow = (leadData) => {
-    const allErrors = {};
-    const requiredFields = ['Name', 'website_url'];
-    
-    requiredFields.forEach(field => {
-      const fieldErrors = validateField(field, leadData[field], leadData);
-      if (fieldErrors.length > 0) {
-        allErrors[field] = fieldErrors;
-      }
-    });
-    
-    // Validate optional fields if they have values
-    if (leadData.email) {
-      const emailErrors = validateField('email', leadData.email, leadData);
-      if (emailErrors.length > 0) {
-        allErrors.email = emailErrors;
-      }
-    }
-    
-    return allErrors;
   };
 
 // Auto-save system
