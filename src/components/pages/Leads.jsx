@@ -596,16 +596,51 @@ const parseMultipleUrls = (input) => {
 
 // Handle updates to empty rows
 const handleEmptyRowUpdate = async (tempId, field, value) => {
+  // Update the empty row data first
   setEmptyRows(prev => 
     prev.map(row => 
       row.Id === tempId ? { ...row, [field]: field === 'arr' ? Number(value) * 1000000 : value } : row
     )
   );
 
-// If website_url is provided, create lead(s)
+  // If website_url is provided, validate and create lead(s)
   if (field === 'website_url' && value.trim()) {
     const emptyRow = emptyRows.find(row => row.Id === tempId);
     if (emptyRow) {
+      // Create temporary lead data for validation
+      const tempLeadData = {
+        ...emptyRow,
+        website_url: value,
+        Name: value // Set Name to website_url for validation purposes
+      };
+      
+      // Validate required fields before attempting creation
+      const validationErrors = validateRow(tempLeadData);
+      
+      if (Object.keys(validationErrors).length > 0) {
+        // Show validation errors
+        Object.entries(validationErrors).forEach(([fieldName, errors]) => {
+          errors.forEach(error => {
+            toast.error(`${fieldName}: ${error}`);
+          });
+        });
+        
+        // Update validation state to show visual feedback
+        setPendingValidation(prev => ({
+          ...prev,
+          [tempId]: validationErrors
+        }));
+        
+        return; // Don't proceed with lead creation
+      }
+      
+      // Clear any previous validation errors
+      setPendingValidation(prev => {
+        const newState = { ...prev };
+        delete newState[tempId];
+        return newState;
+      });
+      
       try {
         // Parse multiple URLs from the input
         const urls = parseMultipleUrls(value);
@@ -1102,7 +1137,7 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 opacity-50"
                                     />
                                 </td>
-<td className="px-6 py-4 whitespace-nowrap min-w-[200px]">
+<td className="px-6 py-4 whitespace-nowrap min-w-[200px] relative">
                                     <Input
                                         type="url"
                                         value={emptyRow.website_url}
@@ -1119,7 +1154,14 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                             }
                                         }}
                                         placeholder="Enter website URL..."
-                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 text-primary-600 font-medium placeholder-gray-400" />
+                                        className={`border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 text-primary-600 font-medium placeholder-gray-400 ${
+                                          pendingValidation[emptyRow.Id]?.website_url ? 'border-red-300 bg-red-50' : ''
+                                        }`} />
+                                    {pendingValidation[emptyRow.Id]?.website_url && (
+                                      <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10">
+                                        {pendingValidation[emptyRow.Id].website_url[0]}
+                                      </div>
+                                    )}
                                 </td>
                                 <td
 className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
