@@ -240,19 +240,19 @@ const validateField = (field, value, leadData = {}) => {
     
     switch (field) {
       case 'Name':
-        if (!value || value.toString().trim() === '') {
+        if (!value || (value && value.toString().trim() === '')) {
           errors.push('Name is required');
         }
         break;
       case 'website_url':
-        if (!value || value.toString().trim() === '') {
+        if (!value || (value && value.toString().trim() === '')) {
           errors.push('Website URL is required');
-        } else if (!value.match(/^https?:\/\/.+\..+/)) {
+        } else if (value && !value.toString().match(/^https?:\/\/.+\..+/)) {
           errors.push('Please enter a valid website URL');
         }
         break;
       case 'email':
-        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        if (value && value.toString && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toString())) {
           errors.push('Please enter a valid email address');
         }
         break;
@@ -1708,31 +1708,6 @@ const [formData, setFormData] = useState({
   
   const [formErrors, setFormErrors] = useState({});
 
-  const validateField = (field, value, leadData = {}) => {
-    const errors = [];
-    
-    switch (field) {
-      case 'Name':
-        if (!value || value.toString().trim() === '') {
-          errors.push('Name is required');
-        }
-        break;
-      case 'website_url':
-        if (!value || value.toString().trim() === '') {
-          errors.push('Website URL is required');
-        } else if (!value.match(/^https?:\/\/.+\..+/)) {
-          errors.push('Please enter a valid website URL');
-        }
-        break;
-      case 'email':
-        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          errors.push('Please enter a valid email address');
-        }
-        break;
-    }
-    
-    return errors;
-  };
 
   const handleFieldValidation = (fieldName, value) => {
     const errors = validateField(fieldName, value, formData);
@@ -1961,31 +1936,6 @@ const [formData, setFormData] = useState({
   
   const [formErrors, setFormErrors] = useState({});
 
-  const validateField = (field, value, leadData = {}) => {
-    const errors = [];
-    
-    switch (field) {
-      case 'Name':
-        if (!value || value.toString().trim() === '') {
-          errors.push('Name is required');
-        }
-        break;
-      case 'website_url':
-        if (!value || value.toString().trim() === '') {
-          errors.push('Website URL is required');
-        } else if (!value.match(/^https?:\/\/.+\..+/)) {
-          errors.push('Please enter a valid website URL');
-        }
-        break;
-      case 'email':
-        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          errors.push('Please enter a valid email address');
-        }
-        break;
-    }
-    
-    return errors;
-  };
 
   const handleFieldValidation = (fieldName, value) => {
     const errors = validateField(fieldName, value, formData);
