@@ -283,8 +283,8 @@ const validateField = (field, value, leadData = {}) => {
     return allErrors;
   };
 
-  // Auto-save system
-  const performAutoSave = async (leadId, field, value, skipValidation = false) => {
+// Auto-save system
+  const performAutoSave = async (leadId, field, value, skipFullValidation = false) => {
     try {
       // Get current lead data with optimistic updates
       const currentLead = data.find(lead => lead.Id === leadId);
@@ -296,18 +296,17 @@ const validateField = (field, value, leadData = {}) => {
         [field]: field === 'arr' ? Number(value) * 1000000 : value
       };
 
-      // Validate if not skipping
-      if (!skipValidation) {
-        const validationErrors = validateRow(updatedLead);
-        if (Object.keys(validationErrors).length > 0) {
+      // Validate only the specific field being updated during auto-save
+      if (!skipFullValidation) {
+        const fieldErrors = validateField(field, value, updatedLead);
+        if (fieldErrors.length > 0) {
           setPendingValidation(prev => ({
             ...prev,
-            [leadId]: validationErrors
+            [leadId]: { [field]: fieldErrors }
           }));
           
-          // Show first error
-          const firstError = Object.values(validationErrors)[0][0];
-          toast.error(firstError);
+          // Show first error for this field
+          toast.error(fieldErrors[0]);
           return;
         }
       }
