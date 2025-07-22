@@ -13,7 +13,6 @@ import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
 import { createDeal, getDeals, updateDeal } from "@/services/api/dealsService";
 import { createLead, deleteLead, getLeads, updateLead } from "@/services/api/leadsService";
-
 // Validation functions - moved to module level for accessibility by modal components
 const validateField = (field, value, leadData = {}) => {
   const errors = [];
@@ -1747,10 +1746,14 @@ const [formData, setFormData] = useState({
     });
     
     if (hasErrors) {
-      setFormErrors(allErrors);
+setFormErrors(allErrors);
       // Show first error in toast
-      const firstError = Object.values(allErrors)[0][0];
-      toast.error(firstError);
+      if (allErrors && Object.keys(allErrors).length > 0) {
+        const firstError = Object.values(allErrors)[0]?.[0];
+        if (firstError) {
+          toast.error(firstError);
+        }
+      }
       return;
     }
     
@@ -1937,6 +1940,21 @@ return (
 
 const EditLeadModal = ({ lead, onClose, onSubmit, categoryOptions, onCreateCategory }) => {
 const [formData, setFormData] = useState({
+    Name: '',
+    website_url: '',
+    team_size: '1-3',
+    arr: 0,
+    category: 'Accounting Software',
+    linkedin_url: '',
+    status: 'Keep an Eye',
+    funding_type: 'Bootstrapped',
+    edition: 'Select Edition',
+    follow_up_date: '',
+    added_by: null,
+    added_by_name: '',
+    Tags: '',
+    Owner: null
+  });
     website_url: lead.website_url,
     team_size: lead.team_size,
     arr: lead.arr?.toString() ?? '',
