@@ -6,7 +6,7 @@ import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
 import ApperIcon from "@/components/ApperIcon";
 
-const DealEditModal = ({ isOpen, onClose, deal, onSave }) => {
+const DealEditModal = ({ isOpen, onClose, deal, onSave, isCreateMode = false }) => {
   const [formData, setFormData] = useState({
     name: "",
     leadName: "",
@@ -58,21 +58,36 @@ const DealEditModal = ({ isOpen, onClose, deal, onSave }) => {
     { value: 12, label: "December" }
   ];
 
-  useEffect(() => {
-    if (deal && isOpen) {
-      setFormData({
-        name: deal.name || "",
-        leadName: deal.leadName || "",
-        value: deal.value?.toString() || "",
-        stage: deal.stage || "",
-        edition: deal.edition || "",
-        assignedRep: deal.assignedRep || "",
-        startMonth: deal.startMonth?.toString() || "",
-        endMonth: deal.endMonth?.toString() || ""
-      });
+useEffect(() => {
+    if (isOpen) {
+      if (isCreateMode) {
+        // Clear form for create mode
+        setFormData({
+          name: "",
+          leadName: "",
+          value: "",
+          stage: "",
+          edition: "",
+          assignedRep: "",
+          startMonth: "",
+          endMonth: ""
+        });
+      } else if (deal) {
+        // Populate form for edit mode
+        setFormData({
+          name: deal.name || deal.Name || "",
+          leadName: deal.leadName || deal.lead_name || "",
+          value: deal.value?.toString() || "",
+          stage: deal.stage || "",
+          edition: deal.edition || "",
+          assignedRep: deal.assignedRep || deal.assigned_rep || "",
+          startMonth: deal.startMonth?.toString() || deal.start_month?.toString() || "",
+          endMonth: deal.endMonth?.toString() || deal.end_month?.toString() || ""
+        });
+      }
       setErrors({});
     }
-  }, [deal, isOpen]);
+  }, [deal, isOpen, isCreateMode]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -117,19 +132,28 @@ const DealEditModal = ({ isOpen, onClose, deal, onSave }) => {
     
     setIsSubmitting(true);
     
-    try {
-      const updatedDeal = {
-        ...formData,
+try {
+      const dealData = {
+        name: formData.name,
+        leadName: formData.leadName,
         value: Number(formData.value),
+        stage: formData.stage,
+        edition: formData.edition,
+        assignedRep: formData.assignedRep,
         startMonth: formData.startMonth ? Number(formData.startMonth) : null,
         endMonth: formData.endMonth ? Number(formData.endMonth) : null
       };
       
-      await onSave(deal.Id, updatedDeal);
-      toast.success("Deal updated successfully");
+      if (isCreateMode) {
+        await onSave(dealData);
+        toast.success("Deal created successfully");
+      } else {
+        await onSave(deal.Id, dealData);
+        toast.success("Deal updated successfully");
+      }
       onClose();
     } catch (error) {
-      toast.error("Failed to update deal");
+      toast.error(isCreateMode ? "Failed to create deal" : "Failed to update deal");
     } finally {
       setIsSubmitting(false);
     }
@@ -166,9 +190,11 @@ const DealEditModal = ({ isOpen, onClose, deal, onSave }) => {
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           >
-            <Card className="p-6">
+<Card className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Edit Deal</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {isCreateMode ? "Create Deal" : "Edit Deal"}
+                </h2>
                 <button
                   onClick={handleClose}
                   disabled={isSubmitting}

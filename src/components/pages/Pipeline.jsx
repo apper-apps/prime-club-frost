@@ -16,14 +16,15 @@ import dashboardData from "@/services/mockData/dashboard.json";
 import dealsData from "@/services/mockData/deals.json";
 import leadsData from "@/services/mockData/leads.json";
 import contactsData from "@/services/mockData/contacts.json";
-import { getDeals, updateDeal } from "@/services/api/dealsService";
+import { getDeals, updateDeal, createDeal } from "@/services/api/dealsService";
 
 const Pipeline = () => {
-  const [deals, setDeals] = useState([]);
+const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingDeal, setEditingDeal] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const stages = [
     { id: "Connected", name: "Connected", color: "bg-blue-500" },
     { id: "Locked", name: "Locked", color: "bg-purple-500" },
@@ -98,6 +99,23 @@ const Pipeline = () => {
   const handleCloseEditModal = () => {
     setShowEditModal(false);
     setEditingDeal(null);
+};
+
+  const handleAddDeal = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleCreateDeal = async (dealData) => {
+    const createdDeal = await createDeal(dealData);
+    
+    if (createdDeal) {
+      setDeals(prevDeals => [createdDeal, ...prevDeals]);
+      setShowCreateModal(false);
+    }
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
   };
 
   const getDealsForStage = (stage) => {
@@ -126,7 +144,7 @@ const Pipeline = () => {
           <h1 className="text-3xl font-bold text-gray-900">Deal Pipeline</h1>
           <p className="text-gray-600 mt-1">Track and manage your sales opportunities</p>
         </div>
-        <Button>
+<Button onClick={handleAddDeal}>
           <ApperIcon name="Plus" size={16} className="mr-2" />
           Add Deal
         </Button>
@@ -193,11 +211,19 @@ key={deal.Id}
         </div>
       </DragDropContext>
 
-      <DealEditModal
+<DealEditModal
         isOpen={showEditModal}
         onClose={handleCloseEditModal}
         deal={editingDeal}
         onSave={handleSaveDeal}
+      />
+      
+      <DealEditModal
+        isOpen={showCreateModal}
+        onClose={handleCloseCreateModal}
+        deal={null}
+        onSave={handleCreateDeal}
+        isCreateMode={true}
       />
 </div>
   );
