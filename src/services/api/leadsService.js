@@ -110,12 +110,24 @@ export const createLead = async (leadData) => {
       apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
     });
     
+    // Valid team size values from database schema
+    const validTeamSizes = ["1-3", "11-50", "201-500", "500+", "1001+"];
+    const providedTeamSize = leadData.team_size || leadData.teamSize || "1-3";
+    
+    // Validate team_size against database picklist values
+    let validatedTeamSize = "1-3"; // default fallback
+    if (validTeamSizes.includes(providedTeamSize)) {
+      validatedTeamSize = providedTeamSize;
+    } else {
+      console.warn(`Invalid team_size value provided: "${providedTeamSize}". Using default "1-3". Valid values are:`, validTeamSizes);
+    }
+    
     const params = {
       records: [
         {
           Name: leadData.name || leadData.Name,
           website_url: leadData.website_url || leadData.websiteUrl,
-          team_size: leadData.team_size || leadData.teamSize || "1-3",
+          team_size: validatedTeamSize,
           arr: leadData.arr || 0,
           category: leadData.category || "Other",
           linkedin_url: leadData.linkedin_url || leadData.linkedinUrl,
@@ -183,6 +195,9 @@ export const updateLead = async (id, updates) => {
       apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
     });
     
+// Valid team size values from database schema
+    const validTeamSizes = ["1-3", "11-50", "201-500", "500+", "1001+"];
+    
     // Create record payload with only defined values
     const recordData = { Id: id };
     
@@ -194,7 +209,14 @@ export const updateLead = async (id, updates) => {
       recordData.website_url = updates.website_url || updates.websiteUrl;
     }
     if (updates.team_size !== undefined || updates.teamSize !== undefined) {
-      recordData.team_size = updates.team_size || updates.teamSize;
+      const providedTeamSize = updates.team_size || updates.teamSize;
+      // Validate team_size against database picklist values
+      if (validTeamSizes.includes(providedTeamSize)) {
+        recordData.team_size = providedTeamSize;
+      } else {
+        console.warn(`Invalid team_size value provided for update: "${providedTeamSize}". Valid values are:`, validTeamSizes);
+        recordData.team_size = "1-3"; // Use default fallback
+      }
     }
     if (updates.arr !== undefined) {
       recordData.arr = updates.arr;
@@ -229,7 +251,6 @@ export const updateLead = async (id, updates) => {
     if (updates.owner !== undefined || updates.Owner !== undefined) {
       recordData.Owner = updates.owner || updates.Owner;
     }
-    
     const params = {
       records: [recordData]
     };
