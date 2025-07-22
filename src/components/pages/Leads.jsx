@@ -163,9 +163,8 @@ const handleStatusChange = async (leadId, newStatus) => {
           const existingDeal = currentDeals.find(deal => deal.leadId === leadId.toString());
           
           if (existingDeal) {
-            // Update existing deal to the new stage
+// Update existing deal to the new stage
             await updateDeal(existingDeal.Id, { stage: targetStage });
-            toast.success(`Lead status updated and deal moved to ${targetStage} stage!`);
           } else {
             // Create new deal in the target stage
             const dealData = {
@@ -183,10 +182,8 @@ const handleStatusChange = async (leadId, newStatus) => {
           }
         } catch (dealError) {
           console.error("Failed to handle deal operation:", dealError);
-          toast.warning("Lead status updated, but failed to sync with deal pipeline");
+toast.warning("Lead status updated, but failed to sync with deal pipeline");
         }
-      } else {
-        toast.success("Lead status updated successfully!");
       }
     } catch (err) {
       toast.error("Failed to update lead status");
@@ -371,13 +368,13 @@ const performAutoSave = async (leadId, field, value, skipFullValidation = false)
               delete newState[leadId];
             }
           }
-          return newState;
-        });
+});
 
-        toast.success("Changes saved successfully");
+        // Success notification is handled by the service layer
       }
     } catch (err) {
       // Rollback optimistic update on error
+      setOptimisticData(prev => {
       setOptimisticData(prev => {
         const newState = { ...prev };
         if (newState[leadId] && newState[leadId][field]) {
