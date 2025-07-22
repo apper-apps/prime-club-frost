@@ -103,7 +103,7 @@ componentDidCatch(error, errorInfo) {
     }
 
     // Log other application errors with full details
-    console.error('Application error caught by ErrorBoundary:', errorDetails);
+    console.error('Application error caught by ErrorBoundary:', JSON.stringify(errorDetails));
     this.setState({ 
       errorInfo,
       error: { ...error, message: errorMessage, stack: errorStack }
