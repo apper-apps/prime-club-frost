@@ -1705,9 +1705,67 @@ const [formData, setFormData] = useState({
     funding_type: "Bootstrapped",
     edition: "Select Edition"
   });
+  
+  const [formErrors, setFormErrors] = useState({});
+
+  const validateField = (field, value, leadData = {}) => {
+    const errors = [];
+    
+    switch (field) {
+      case 'Name':
+        if (!value || value.toString().trim() === '') {
+          errors.push('Name is required');
+        }
+        break;
+      case 'website_url':
+        if (!value || value.toString().trim() === '') {
+          errors.push('Website URL is required');
+        } else if (!value.match(/^https?:\/\/.+\..+/)) {
+          errors.push('Please enter a valid website URL');
+        }
+        break;
+      case 'email':
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          errors.push('Please enter a valid email address');
+        }
+        break;
+    }
+    
+    return errors;
+  };
+
+  const handleFieldValidation = (fieldName, value) => {
+    const errors = validateField(fieldName, value, formData);
+    setFormErrors(prev => ({
+      ...prev,
+      [fieldName]: errors.length > 0 ? errors : undefined
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate all required fields before submission
+    const requiredFields = ['website_url'];
+    const allErrors = {};
+    let hasErrors = false;
+    
+    requiredFields.forEach(field => {
+      const fieldErrors = validateField(field, formData[field], formData);
+      if (fieldErrors.length > 0) {
+        allErrors[field] = fieldErrors;
+        hasErrors = true;
+      }
+    });
+    
+    if (hasErrors) {
+      setFormErrors(allErrors);
+      // Show first error in toast
+      const firstError = Object.values(allErrors)[0][0];
+      toast.error(firstError);
+      return;
+    }
+    
     onSubmit({
       ...formData,
       arr: Number(formData.arr)
@@ -1729,15 +1787,30 @@ return (
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Website URL
 </label>
-<Input
-              type="url"
-              value={formData.website_url}
-              detectUrlPrefix={true}
-              urlPrefix="https://"
-              onChange={(e) => setFormData({...formData, website_url: e.target.value})}
-              placeholder="https://example.com"
-              required
-            />
+<div className="relative">
+              <Input
+                type="url"
+                value={formData.website_url}
+                detectUrlPrefix={true}
+                urlPrefix="https://"
+                onChange={(e) => {
+                  setFormData({...formData, website_url: e.target.value});
+                  // Clear errors when user starts typing
+                  if (formErrors.website_url) {
+                    setFormErrors(prev => ({...prev, website_url: undefined}));
+                  }
+                }}
+                onBlur={(e) => handleFieldValidation('website_url', e.target.value)}
+                placeholder="https://example.com"
+                className={formErrors.website_url ? 'border-red-300 bg-red-50' : ''}
+                required
+              />
+              {formErrors.website_url && (
+                <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
+                  {formErrors.website_url[0]}
+                </div>
+              )}
+            </div>
           </div>
           
           <div>
@@ -1885,9 +1958,67 @@ const [formData, setFormData] = useState({
     funding_type: lead.funding_type,
     edition: lead.edition || "Select Edition"
   });
+  
+  const [formErrors, setFormErrors] = useState({});
+
+  const validateField = (field, value, leadData = {}) => {
+    const errors = [];
+    
+    switch (field) {
+      case 'Name':
+        if (!value || value.toString().trim() === '') {
+          errors.push('Name is required');
+        }
+        break;
+      case 'website_url':
+        if (!value || value.toString().trim() === '') {
+          errors.push('Website URL is required');
+        } else if (!value.match(/^https?:\/\/.+\..+/)) {
+          errors.push('Please enter a valid website URL');
+        }
+        break;
+      case 'email':
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          errors.push('Please enter a valid email address');
+        }
+        break;
+    }
+    
+    return errors;
+  };
+
+  const handleFieldValidation = (fieldName, value) => {
+    const errors = validateField(fieldName, value, formData);
+    setFormErrors(prev => ({
+      ...prev,
+      [fieldName]: errors.length > 0 ? errors : undefined
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate all required fields before submission
+    const requiredFields = ['website_url'];
+    const allErrors = {};
+    let hasErrors = false;
+    
+    requiredFields.forEach(field => {
+      const fieldErrors = validateField(field, formData[field], formData);
+      if (fieldErrors.length > 0) {
+        allErrors[field] = fieldErrors;
+        hasErrors = true;
+      }
+    });
+    
+    if (hasErrors) {
+      setFormErrors(allErrors);
+      // Show first error in toast
+      const firstError = Object.values(allErrors)[0][0];
+      toast.error(firstError);
+      return;
+    }
+    
     onSubmit(lead.Id, {
       ...formData,
       arr: Number(formData.arr)
@@ -1908,16 +2039,32 @@ const [formData, setFormData] = useState({
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Website URL
                                 </label>
-<Input
-                    type="url"
-                    value={formData.website_url}
-                    detectUrlPrefix={true}
-                    urlPrefix="https://"
-                    onChange={e => setFormData({
-                        ...formData,
-                        website_url: e.target.value
-                    })}
-required />
+<div className="relative">
+                    <Input
+                        type="url"
+                        value={formData.website_url}
+                        detectUrlPrefix={true}
+                        urlPrefix="https://"
+                        onChange={e => {
+                          setFormData({
+                              ...formData,
+                              website_url: e.target.value
+                          });
+                          // Clear errors when user starts typing
+                          if (formErrors.website_url) {
+                            setFormErrors(prev => ({...prev, website_url: undefined}));
+                          }
+                        }}
+                        onBlur={(e) => handleFieldValidation('website_url', e.target.value)}
+                        className={formErrors.website_url ? 'border-red-300 bg-red-50' : ''}
+                        required 
+                    />
+                    {formErrors.website_url && (
+                      <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
+                        {formErrors.website_url[0]}
+                      </div>
+                    )}
+                </div>
             </div>
             
             <div>
