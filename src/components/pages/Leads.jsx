@@ -34,12 +34,6 @@ const Leads = () => {
   const [topScrollbarRef, setTopScrollbarRef] = useState(null);
   const [tableScrollbarRef, setTableScrollbarRef] = useState(null);
   
-// Auto-save system state
-  const [editingStates, setEditingStates] = useState({}); // Track which cells are being edited
-  const [optimisticData, setOptimisticData] = useState({}); // Store optimistic updates
-  const [pendingValidation, setPendingValidation] = useState({}); // Track validation errors
-  const [savingStates, setSavingStates] = useState({}); // Track which rows are being saved
-
 // Validation functions - moved to module level for accessibility by modal components
 const validateField = (field, value, leadData = {}) => {
   const errors = [];
@@ -89,9 +83,32 @@ const validateRow = (leadData) => {
   return allErrors;
 };
 
-function Leads() {
-
-  useEffect(() => {
+const Leads = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [fundingFilter, setFundingFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [teamSizeFilter, setTeamSizeFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("websiteUrl");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
+  const [emptyRows, setEmptyRows] = useState([]);
+  const [nextTempId, setNextTempId] = useState(-1);
+  const [selectedLeads, setSelectedLeads] = useState([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [topScrollbarRef, setTopScrollbarRef] = useState(null);
+  const [tableScrollbarRef, setTableScrollbarRef] = useState(null);
+  
+  // Auto-save system state
+  const [editingStates, setEditingStates] = useState({}); // Track which cells are being edited
+  const [optimisticData, setOptimisticData] = useState({}); // Store optimistic updates
+  const [pendingValidation, setPendingValidation] = useState({}); // Track validation errors
+  const [savingStates, setSavingStates] = useState({}); // Track which rows are being saved
+useEffect(() => {
     loadLeads();
   }, []);
 
@@ -115,7 +132,6 @@ function Leads() {
       tableScrollbarRef.removeEventListener('scroll', handleTableScroll);
     };
   }, [topScrollbarRef, tableScrollbarRef]);
-
 const loadLeads = async () => {
     try {
       setLoading(true);
