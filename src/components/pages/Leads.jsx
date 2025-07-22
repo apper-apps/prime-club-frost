@@ -129,6 +129,13 @@ const loadLeads = async () => {
 
 const handleStatusChange = async (leadId, newStatus) => {
     try {
+      // Validate leadId before calling service
+      if (!leadId || typeof leadId !== 'number' || leadId <= 0 || !Number.isInteger(leadId)) {
+        console.error('Invalid lead ID for status change:', leadId);
+        toast.error('Invalid lead selected. Please refresh the page and try again.');
+        return;
+      }
+      
       const updatedLead = await updateLead(leadId, { status: newStatus });
       setData(prevData => 
         prevData.map(lead => 
@@ -246,6 +253,13 @@ const handleDelete = async (leadId) => {
 
 const handleUpdateLead = async (leadId, updates) => {
     try {
+      // Validate leadId before calling service
+      if (!leadId || typeof leadId !== 'number' || leadId <= 0 || !Number.isInteger(leadId)) {
+        console.error('Invalid lead ID for update:', leadId);
+        toast.error('Invalid lead selected. Please refresh the page and try again.');
+        return;
+      }
+      
       const updatedLead = await updateLead(leadId, updates);
       setData(prevData => 
         prevData.map(lead => 
