@@ -372,9 +372,8 @@ const performAutoSave = async (leadId, field, value, skipFullValidation = false)
 
         // Success notification is handled by the service layer
       }
-    } catch (err) {
+} catch (err) {
       // Rollback optimistic update on error
-      setOptimisticData(prev => {
       setOptimisticData(prev => {
         const newState = { ...prev };
         if (newState[leadId] && newState[leadId][field]) {
