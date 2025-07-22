@@ -1149,8 +1149,9 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                 </td>
                                 <td
                                     className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
-                                    <SearchableSelect
+<SearchableSelect
                                         value={emptyRow.category}
+                                        onChange={(value) => handleEmptyRowUpdate(emptyRow.Id, 'category', value)}
                                         options={categoryOptions}
                                         placeholder="Select category..."
                                         className="text-gray-500"
