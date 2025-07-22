@@ -1951,7 +1951,7 @@ const EditLeadModal = ({ lead, onClose, onSubmit, categoryOptions, onCreateCateg
 const [formData, setFormData] = useState({
     website_url: lead.website_url,
     team_size: lead.team_size,
-    arr: lead.arr.toString(),
+    arr: lead.arr?.toString() ?? '',
     category: lead.category,
     linkedin_url: lead.linkedin_url,
     status: lead.status,
