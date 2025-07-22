@@ -20,19 +20,19 @@ const validateField = (field, value, leadData = {}) => {
   
   switch (field) {
     case 'Name':
-      if (!value || (value && value.toString().trim() === '')) {
+      if (!value || (value && value?.toString && value.toString().trim() === '')) {
         errors.push('Name is required');
       }
       break;
     case 'website_url':
-      if (!value || (value && value.toString().trim() === '')) {
+      if (!value || (value && value?.toString && value.toString().trim() === '')) {
         errors.push('Website URL is required');
-      } else if (value && !value.toString().match(/^https?:\/\/.+\..+/)) {
+      } else if (value && value?.toString && !value.toString().match(/^https?:\/\/.+\..+/)) {
         errors.push('Please enter a valid website URL');
       }
       break;
     case 'email':
-      if (value && value.toString && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toString())) {
+      if (value && value?.toString && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toString())) {
         errors.push('Please enter a valid email address');
       }
       break;
