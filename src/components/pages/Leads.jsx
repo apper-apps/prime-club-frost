@@ -421,7 +421,7 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
     }
   };
 
-const teamSizeOptions = ["1-3", "4-10", "11-50", "51-100", "101-500", "500+"];
+const teamSizeOptions = ["1-3", "11-50", "201-500", "500+", "1001+"];
   const [categoryOptions, setCategoryOptions] = useState([
     "3D Design Software",
     "Accounting Software", 
@@ -1378,11 +1378,10 @@ return (
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
 <option value="1-3">1-3</option>
-              <option value="4-10">4-10</option>
               <option value="11-50">11-50</option>
-              <option value="51-100">51-100</option>
-              <option value="101-500">101-500</option>
+              <option value="201-500">201-500</option>
               <option value="500+">500+</option>
+              <option value="1001+">1001+</option>
             </select>
           </div>
           
@@ -1560,11 +1559,10 @@ required />
 })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
 <option value="1-3">1-3</option>
-                    <option value="4-10">4-10</option>
-                        <option value="11-50">11-50</option>
-                        <option value="51-100">51-100</option>
-                        <option value="101-500">101-500</option>
-                        <option value="500+">500+</option>
+                    <option value="11-50">11-50</option>
+                    <option value="201-500">201-500</option>
+                    <option value="500+">500+</option>
+                    <option value="1001+">1001+</option>
                     </select>
                 </div>
                 <div>
