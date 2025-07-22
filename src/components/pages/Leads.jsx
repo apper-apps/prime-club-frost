@@ -1983,11 +1983,15 @@ const [formData, setFormData] = useState({
       }
     });
     
-    if (hasErrors) {
+if (hasErrors) {
       setFormErrors(allErrors);
       // Show first error in toast
-      const firstError = Object.values(allErrors)[0][0];
-      toast.error(firstError);
+      if (allErrors && Object.keys(allErrors).length > 0) {
+        const firstError = Object.values(allErrors)[0]?.[0];
+        if (firstError) {
+          toast.error(firstError);
+        }
+      }
       return;
     }
     
