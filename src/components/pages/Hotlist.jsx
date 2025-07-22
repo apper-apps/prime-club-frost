@@ -85,14 +85,16 @@ const loadLeads = async () => {
         
         if (existingDeal) {
           await updateDeal(existingDeal.Id, { stage: targetStage });
-          toast.info(`Deal stage updated to ${targetStage}`);
-        } else {
+} else {
+          const websiteUrl = updatedLead.website_url || '';
+          const cleanUrl = websiteUrl ? websiteUrl.replace('https://', '').replace('www.', '') : 'Unknown';
           const dealData = {
-            name: `${updatedLead.websiteUrl.replace('https://', '').replace('www.', '')} - ${updatedLead.category}`,
-            leadName: updatedLead.websiteUrl.replace('https://', '').replace('www.', ''),
+            name: `${cleanUrl} - ${updatedLead.category || 'Unknown'}`,
+            leadName: cleanUrl,
             leadId: updatedLead.Id,
             value: updatedLead.arr || 0,
             stage: targetStage,
+            assignedRep: 'Unassigned',
             assignedRep: 'Unassigned',
             startMonth: new Date().toISOString().split('T')[0],
             endMonth: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -479,9 +481,9 @@ const loadLeads = async () => {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
-                          <ApperIcon name="Globe" size={16} className="text-gray-400" />
+<ApperIcon name="Globe" size={16} className="text-gray-400" />
                           <span className="font-medium text-gray-900">
-                            {lead.websiteUrl.replace('https://', '').replace('www.', '')}
+                            {lead.website_url ? lead.website_url.replace('https://', '').replace('www.', '') : 'No URL'}
                           </span>
                         </div>
                         {lead.linkedinUrl && (
