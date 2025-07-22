@@ -40,7 +40,7 @@ const Leads = () => {
   const [pendingValidation, setPendingValidation] = useState({}); // Track validation errors
   const [savingStates, setSavingStates] = useState({}); // Track which rows are being saved
 
-  // Validation functions
+// Validation functions
   const validateField = (field, value, leadData = {}) => {
     const errors = [];
     
