@@ -1940,29 +1940,20 @@ return (
 
 const EditLeadModal = ({ lead, onClose, onSubmit, categoryOptions, onCreateCategory }) => {
 const [formData, setFormData] = useState({
-    Name: '',
-    website_url: '',
-    team_size: '1-3',
-    arr: 0,
-    category: 'Accounting Software',
-    linkedin_url: '',
-    status: 'Keep an Eye',
-    funding_type: 'Bootstrapped',
-    edition: 'Select Edition',
-    follow_up_date: '',
-    added_by: null,
-    added_by_name: '',
-    Tags: '',
-    Owner: null
-  });
-    website_url: lead.website_url,
-    team_size: lead.team_size,
+    Name: lead.Name || '',
+    website_url: lead.website_url || '',
+    team_size: lead.team_size || '1-3',
     arr: lead.arr?.toString() ?? '',
-    category: lead.category,
-    linkedin_url: lead.linkedin_url,
-    status: lead.status,
-    funding_type: lead.funding_type,
-    edition: lead.edition || "Select Edition"
+    category: lead.category || 'Accounting Software',
+    linkedin_url: lead.linkedin_url || '',
+    status: lead.status || 'Keep an Eye',
+    funding_type: lead.funding_type || 'Bootstrapped',
+    edition: lead.edition || 'Select Edition',
+    follow_up_date: lead.follow_up_date || '',
+    added_by: lead.added_by || null,
+    added_by_name: lead.added_by_name || '',
+    Tags: lead.Tags || '',
+    Owner: lead.Owner || null
   });
   
   const [formErrors, setFormErrors] = useState({});
