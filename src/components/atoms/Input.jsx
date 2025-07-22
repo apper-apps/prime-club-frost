@@ -17,7 +17,7 @@ const Input = forwardRef(({
     setInternalValue(controlledValue || "");
   }, [controlledValue]);
 
-  const handleChange = (e) => {
+const handleChange = (e) => {
     let newValue = e.target.value;
     
     // Apply URL prefix logic if enabled
@@ -46,6 +46,18 @@ const Input = forwardRef(({
     }
   };
 
+  const handleBlur = (e) => {
+    if (props.onBlur) {
+      props.onBlur(e);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (props.onKeyDown) {
+      props.onKeyDown(e);
+    }
+  };
+
   const displayValue = controlledValue !== undefined ? controlledValue : internalValue;
 
   return (
@@ -55,9 +67,11 @@ const Input = forwardRef(({
         "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
-      ref={ref}
+ref={ref}
       value={displayValue}
       onChange={handleChange}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
       {...props}
     />
   )

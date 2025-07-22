@@ -2,23 +2,23 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import ApperIcon from "@/components/ApperIcon";
-import Badge from "@/components/atoms/Badge";
-import Button from "@/components/atoms/Button";
-import Card from "@/components/atoms/Card";
-import Input from "@/components/atoms/Input";
 import Empty from "@/components/ui/Empty";
 import Error from "@/components/ui/Error";
 import Loading from "@/components/ui/Loading";
 import Hotlist from "@/components/pages/Hotlist";
 import SearchBar from "@/components/molecules/SearchBar";
-import { createLead, deleteLead, getLeads, updateLead } from "@/services/api/leadsService";
+import Card from "@/components/atoms/Card";
+import Input from "@/components/atoms/Input";
+import Badge from "@/components/atoms/Badge";
+import Button from "@/components/atoms/Button";
 import { createDeal, getDeals, updateDeal } from "@/services/api/dealsService";
+import { createLead, deleteLead, getLeads, updateLead } from "@/services/api/leadsService";
 
 const Leads = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [fundingFilter, setFundingFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -31,8 +31,14 @@ const [searchTerm, setSearchTerm] = useState("");
   const [nextTempId, setNextTempId] = useState(-1);
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
-const [topScrollbarRef, setTopScrollbarRef] = useState(null);
+  const [topScrollbarRef, setTopScrollbarRef] = useState(null);
   const [tableScrollbarRef, setTableScrollbarRef] = useState(null);
+  
+  // Auto-save system state
+  const [editingStates, setEditingStates] = useState({}); // Track which cells are being edited
+  const [optimisticData, setOptimisticData] = useState({}); // Store optimistic updates
+  const [pendingValidation, setPendingValidation] = useState({}); // Track validation errors
+  const [savingStates, setSavingStates] = useState({}); // Track which rows are being saved
 
   useEffect(() => {
     loadLeads();
@@ -228,40 +234,308 @@ const handleUpdateLead = async (leadId, updates) => {
     setSelectedLeads([]);
   };
 
-const handleFieldUpdate = async (leadId, field, value) => {
+// Validation functions
+  const validateField = (field, value, leadData = {}) => {
+    const errors = [];
+    
+    switch (field) {
+      case 'Name':
+      case 'website_url':
+        if (!value || value.toString().trim() === '') {
+          errors.push(`${field === 'website_url' ? 'Website URL' : 'Name'} is required`);
+        }
+        break;
+      case 'email':
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          errors.push('Please enter a valid email address');
+        }
+        break;
+      case 'website_url':
+        if (value && !value.match(/^https?:\/\/.+\..+/)) {
+          errors.push('Please enter a valid website URL');
+        }
+        break;
+    }
+    
+    return errors;
+  };
+
+  const validateRow = (leadData) => {
+    const allErrors = {};
+    const requiredFields = ['Name', 'website_url'];
+    
+    requiredFields.forEach(field => {
+      const fieldErrors = validateField(field, leadData[field], leadData);
+      if (fieldErrors.length > 0) {
+        allErrors[field] = fieldErrors;
+      }
+    });
+    
+    // Validate optional fields if they have values
+    if (leadData.email) {
+      const emailErrors = validateField('email', leadData.email, leadData);
+      if (emailErrors.length > 0) {
+        allErrors.email = emailErrors;
+      }
+    }
+    
+    return allErrors;
+  };
+
+  // Auto-save system
+  const performAutoSave = async (leadId, field, value, skipValidation = false) => {
     try {
+      // Get current lead data with optimistic updates
+      const currentLead = data.find(lead => lead.Id === leadId);
+      if (!currentLead) return;
+
+      const updatedLead = {
+        ...currentLead,
+        ...optimisticData[leadId],
+        [field]: field === 'arr' ? Number(value) * 1000000 : value
+      };
+
+      // Validate if not skipping
+      if (!skipValidation) {
+        const validationErrors = validateRow(updatedLead);
+        if (Object.keys(validationErrors).length > 0) {
+          setPendingValidation(prev => ({
+            ...prev,
+            [leadId]: validationErrors
+          }));
+          
+          // Show first error
+          const firstError = Object.values(validationErrors)[0][0];
+          toast.error(firstError);
+          return;
+        }
+      }
+
+      // Clear validation errors for this row
+      setPendingValidation(prev => {
+        const newState = { ...prev };
+        delete newState[leadId];
+        return newState;
+      });
+
+      // Set saving state
+      setSavingStates(prev => ({ ...prev, [leadId]: true }));
+
+      // Perform the actual save
       let processedValue = value;
       if (field === 'arr') {
-        // Convert millions to actual value
         processedValue = Number(value) * 1000000;
       }
+
       const updates = { [field]: processedValue };
-      const updatedLead = await updateLead(leadId, updates);
-      setData(prevData => 
-        prevData.map(lead => 
-          lead.Id === leadId ? updatedLead : lead
-        )
-      );
-      toast.success("Lead updated successfully!");
+      const savedLead = await updateLead(leadId, updates);
+
+      if (savedLead) {
+        // Update actual data with server response
+        setData(prevData => 
+          prevData.map(lead => 
+            lead.Id === leadId ? savedLead : lead
+          )
+        );
+
+        // Clear optimistic data for this row
+        setOptimisticData(prev => {
+          const newState = { ...prev };
+          delete newState[leadId];
+          return newState;
+        });
+
+        // Clear editing state
+        setEditingStates(prev => {
+          const newState = { ...prev };
+          if (newState[leadId]) {
+            delete newState[leadId][field];
+            if (Object.keys(newState[leadId]).length === 0) {
+              delete newState[leadId];
+            }
+          }
+          return newState;
+        });
+
+        toast.success("Changes saved successfully");
+      }
     } catch (err) {
-      toast.error("Failed to update lead");
+      // Rollback optimistic update on error
+      setOptimisticData(prev => {
+        const newState = { ...prev };
+        if (newState[leadId] && newState[leadId][field]) {
+          delete newState[leadId][field];
+          if (Object.keys(newState[leadId]).length === 0) {
+            delete newState[leadId];
+          }
+        }
+        return newState;
+      });
+
+      toast.error("Failed to save changes: " + (err.message || "Unknown error"));
+    } finally {
+      // Clear saving state
+      setSavingStates(prev => {
+        const newState = { ...prev };
+        delete newState[leadId];
+        return newState;
+      });
     }
   };
 
-  // Debounced version for real-time updates
-  const handleFieldUpdateDebounced = (leadId, field, value) => {
-    // Clear any existing timeout
+  // Debounced auto-save (500ms as requested)
+  const debouncedAutoSave = (leadId, field, value) => {
     const timeoutKey = `${leadId}-${field}`;
-    if (window.fieldUpdateTimeouts) {
-      clearTimeout(window.fieldUpdateTimeouts[timeoutKey]);
+    
+    // Clear existing timeout
+    if (window.autoSaveTimeouts) {
+      clearTimeout(window.autoSaveTimeouts[timeoutKey]);
     } else {
-      window.fieldUpdateTimeouts = {};
+      window.autoSaveTimeouts = {};
     }
     
-    // Set new timeout
-    window.fieldUpdateTimeouts[timeoutKey] = setTimeout(() => {
-      handleFieldUpdate(leadId, field, value);
-    }, 1000);
+    // Set new timeout for 500ms
+    window.autoSaveTimeouts[timeoutKey] = setTimeout(() => {
+      performAutoSave(leadId, field, value);
+    }, 500);
+  };
+
+  // Handle field changes with optimistic updates
+  const handleFieldChange = (leadId, field, value) => {
+    // Update optimistic data immediately
+    setOptimisticData(prev => ({
+      ...prev,
+      [leadId]: {
+        ...prev[leadId],
+        [field]: field === 'arr' ? Number(value) * 1000000 : value
+      }
+    }));
+
+    // Set editing state
+    setEditingStates(prev => ({
+      ...prev,
+      [leadId]: {
+        ...prev[leadId],
+        [field]: true
+      }
+    }));
+
+    // Trigger debounced auto-save
+    debouncedAutoSave(leadId, field, value);
+  };
+
+  // Handle immediate save (Tab, Enter, or manual save)
+  const handleImmediateSave = async (leadId, field, value) => {
+    // Clear any pending debounced save
+    const timeoutKey = `${leadId}-${field}`;
+    if (window.autoSaveTimeouts && window.autoSaveTimeouts[timeoutKey]) {
+      clearTimeout(window.autoSaveTimeouts[timeoutKey]);
+      delete window.autoSaveTimeouts[timeoutKey];
+    }
+
+    await performAutoSave(leadId, field, value);
+  };
+
+  // Handle row save (Ctrl+S)
+  const handleRowSave = async (leadId) => {
+    const editingFields = editingStates[leadId];
+    if (!editingFields) return;
+
+    // Clear all pending timeouts for this row
+    Object.keys(editingFields).forEach(field => {
+      const timeoutKey = `${leadId}-${field}`;
+      if (window.autoSaveTimeouts && window.autoSaveTimeouts[timeoutKey]) {
+        clearTimeout(window.autoSaveTimeouts[timeoutKey]);
+        delete window.autoSaveTimeouts[timeoutKey];
+      }
+    });
+
+    // Get current data with optimistic updates
+    const currentLead = data.find(lead => lead.Id === leadId);
+    const updatedData = {
+      ...currentLead,
+      ...optimisticData[leadId]
+    };
+
+    // Save all changed fields
+    for (const field of Object.keys(editingFields)) {
+      await performAutoSave(leadId, field, updatedData[field], true);
+    }
+  };
+
+  // Handle cancel changes (Escape)
+  const handleCancelChanges = (leadId) => {
+    // Clear all pending timeouts for this row
+    if (editingStates[leadId]) {
+      Object.keys(editingStates[leadId]).forEach(field => {
+        const timeoutKey = `${leadId}-${field}`;
+        if (window.autoSaveTimeouts && window.autoSaveTimeouts[timeoutKey]) {
+          clearTimeout(window.autoSaveTimeouts[timeoutKey]);
+          delete window.autoSaveTimeouts[timeoutKey];
+        }
+      });
+    }
+
+    // Clear editing state
+    setEditingStates(prev => {
+      const newState = { ...prev };
+      delete newState[leadId];
+      return newState;
+    });
+
+    // Clear optimistic data
+    setOptimisticData(prev => {
+      const newState = { ...prev };
+      delete newState[leadId];
+      return newState;
+    });
+
+    // Clear validation errors
+    setPendingValidation(prev => {
+      const newState = { ...prev };
+      delete newState[leadId];
+      return newState;
+    });
+
+    toast.info("Changes cancelled");
+  };
+
+  // Get display value with optimistic updates
+  const getDisplayValue = (lead, field) => {
+    return optimisticData[lead.Id]?.[field] ?? lead[field];
+  };
+
+  // Keyboard event handler
+  const handleKeyDown = (e, leadId, field, value) => {
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault();
+      handleImmediateSave(leadId, field, value);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleCancelChanges(leadId);
+    } else if (e.ctrlKey && e.key === 's') {
+      e.preventDefault();
+      handleRowSave(leadId);
+    }
+  };
+
+  // Click outside row detection
+  const handleRowClick = (leadId) => {
+    // Save any other rows that were being edited
+    Object.keys(editingStates).forEach(otherLeadId => {
+      if (otherLeadId !== leadId.toString()) {
+        handleRowSave(parseInt(otherLeadId));
+      }
+    });
+  };
+
+const handleFieldUpdate = async (leadId, field, value) => {
+    await handleImmediateSave(leadId, field, value);
+  };
+
+  // Legacy debounced version for compatibility
+  const handleFieldUpdateDebounced = (leadId, field, value) => {
+    handleFieldChange(leadId, field, value);
   };
 
 // Add empty row for new data entry
@@ -958,7 +1232,7 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                             </tr>
                         )}
                         {/* Existing leads data */}
-{filteredAndSortedData.map(lead => <tr key={lead.Id} className="hover:bg-gray-50">
+{filteredAndSortedData.map(lead => <tr key={lead.Id} className="hover:bg-gray-50" onClick={() => handleRowClick(lead.Id)}>
                             <td className="px-6 py-4 whitespace-nowrap w-[50px]">
                                 <input
                                     type="checkbox"
@@ -967,156 +1241,190 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                 />
                             </td>
-<td className="px-6 py-4 whitespace-nowrap min-w-[200px]">
-                                <Input
-                                    type="url"
-                                    value={lead.website_url}
-                                    detectUrlPrefix={true}
-                                    urlPrefix="https://"
-                                    onChange={e => {
-                                        setData(prevData => prevData.map(l => l.Id === lead.Id ? {
-                                            ...l,
-                                            website_url: e.target.value
-                                        } : l));
-
-                                        handleFieldUpdateDebounced(lead.Id, "website_url", e.target.value);
-                                    }}
-                                    onBlur={e => handleFieldUpdate(lead.Id, "website_url", e.target.value)}
-                                    onKeyDown={e => {
-                                        if (e.key === "Enter") {
-                                            handleFieldUpdate(lead.Id, "website_url", e.target.value);
-                                        }
-                                    }}
-                                    className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 text-primary-600 font-medium" />
-                            </td>
-<td
-                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
-                                <select
-                                    value={lead.team_size}
-                                    onChange={e => handleFieldUpdate(lead.Id, "team_size", e.target.value)}
-                                    className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full">
-{teamSizeOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                                </select>
-                            </td>
-                            <td
-                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px]">
-                                <Input
-                                    type="number"
-                                    step="0.1"
-                                    min="0"
-                                    value={(lead.arr / 1000000).toFixed(1)}
-                                    onChange={e => {
-                                        setData(prevData => prevData.map(l => l.Id === lead.Id ? {
-                                            ...l,
-                                            arr: Number(e.target.value) * 1000000
-                                        } : l));
-
-                                        handleFieldUpdateDebounced(lead.Id, "arr", e.target.value);
-                                    }}
-                                    onBlur={e => handleFieldUpdate(lead.Id, "arr", e.target.value)}
-                                    onKeyDown={e => {
-                                        if (e.key === "Enter") {
-                                            handleFieldUpdate(lead.Id, "arr", e.target.value);
-}
-                                    }}
-                                    className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full" />
-                            </td>
-                            <td
-                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
-                                <SearchableSelect
-                                    onChange={(value) => handleFieldUpdate(lead.Id, "category", value)}
-                                    options={categoryOptions}
-                                    placeholder="Select category..."
-                                    onCreateCategory={handleCreateCategory}
-                                />
-                            </td>
-<td className="px-6 py-4 whitespace-nowrap min-w-[100px]">
+<td className="px-6 py-4 whitespace-nowrap min-w-[200px] relative">
                                 <div className="flex items-center gap-2">
-<Input
-                                        type="url"
-                                        value={lead.linkedin_url}
-                                        onChange={e => {
-                                            setData(prevData => prevData.map(l => l.Id === lead.Id ? {
-                                                ...l,
-                                                linkedin_url: e.target.value
-                                            } : l));
-
-                                            handleFieldUpdateDebounced(lead.Id, "linkedin_url", e.target.value);
-                                        }}
-                                        onBlur={e => handleFieldUpdate(lead.Id, "linkedin_url", e.target.value)}
-                                        onKeyDown={e => {
-                                            if (e.key === "Enter") {
-                                                handleFieldUpdate(lead.Id, "linkedin_url", e.target.value);
-                                            }
-                                        }}
-                                        placeholder="LinkedIn URL..."
-                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm flex-1" />
-{lead.linkedin_url && (
-                                        <a
-                                            href={lead.linkedin_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-primary-600 hover:text-primary-800 flex-shrink-0 p-1 hover:bg-gray-100 rounded"
-                                            title="Visit LinkedIn profile">
-                                            <ApperIcon name="Linkedin" size={16} />
-                                        </a>
-                                    )}
+                                  <Input
+                                      type="url"
+                                      value={getDisplayValue(lead, 'website_url')}
+                                      detectUrlPrefix={true}
+                                      urlPrefix="https://"
+                                      onChange={e => handleFieldChange(lead.Id, "website_url", e.target.value)}
+                                      onBlur={e => handleImmediateSave(lead.Id, "website_url", e.target.value)}
+                                      onKeyDown={e => handleKeyDown(e, lead.Id, "website_url", e.target.value)}
+                                      className={`border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 text-primary-600 font-medium ${
+                                        pendingValidation[lead.Id]?.website_url ? 'border-red-300 bg-red-50' : ''
+                                      }`} />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.website_url && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                                {pendingValidation[lead.Id]?.website_url && (
+                                  <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10">
+                                    {pendingValidation[lead.Id].website_url[0]}
+                                  </div>
+                                )}
+                            </td>
+<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px] relative">
+                                <div className="flex items-center gap-2">
+                                  <select
+                                      value={getDisplayValue(lead, 'team_size')}
+                                      onChange={e => handleFieldChange(lead.Id, "team_size", e.target.value)}
+                                      onBlur={e => handleImmediateSave(lead.Id, "team_size", e.target.value)}
+                                      onKeyDown={e => handleKeyDown(e, lead.Id, "team_size", e.target.value)}
+                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full">
+                                      {teamSizeOptions.map(option => <option key={option} value={option}>{option}</option>)}
+                                  </select>
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.team_size && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
                                 </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap min-w-[150px]">
-                                <div className="relative">
-                                    <Badge
-                                        variant={getStatusColor(lead.status)}
-                                        className="cursor-pointer hover:shadow-md transition-shadow">
-                                        {lead.status}
-                                    </Badge>
-                                    <select
-                                        value={lead.status}
-                                        onChange={e => handleStatusChange(lead.Id, e.target.value)}
-                                        className="absolute inset-0 opacity-0 cursor-pointer w-full">
-                                        {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                                    </select>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px] relative">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                      type="number"
+                                      step="0.1"
+                                      min="0"
+                                      value={(getDisplayValue(lead, 'arr') / 1000000).toFixed(1)}
+                                      onChange={e => handleFieldChange(lead.Id, "arr", e.target.value)}
+                                      onBlur={e => handleImmediateSave(lead.Id, "arr", e.target.value)}
+                                      onKeyDown={e => handleKeyDown(e, lead.Id, "arr", e.target.value)}
+                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full" />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.arr && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
                                 </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap min-w-[140px]">
-                                <div className="relative">
-<Badge
-                                        variant={lead.funding_type === "Series C" ? "primary" : "default"}
-                                        className="cursor-pointer hover:shadow-md transition-shadow">
-                                        {lead.funding_type}
-                                    </Badge>
-                                    <select
-                                        value={lead.funding_type}
-                                        onChange={e => handleFieldUpdate(lead.Id, "funding_type", e.target.value)}
-                                        className="absolute inset-0 opacity-0 cursor-pointer w-full">
-                                        {fundingTypeOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                                    </select>
-</div>
+</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px] relative">
+                                <div className="flex items-center gap-2">
+                                  <SearchableSelect
+                                      value={getDisplayValue(lead, 'category')}
+                                      onChange={(value) => {
+                                        handleFieldChange(lead.Id, "category", value);
+                                        handleImmediateSave(lead.Id, "category", value);
+                                      }}
+                                      options={categoryOptions}
+                                      placeholder="Select category..."
+                                      onCreateCategory={handleCreateCategory}
+                                  />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.category && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap min-w-[130px]">
-<Input
-                                    type="date"
-                                    value={lead.follow_up_date ? lead.follow_up_date.split('T')[0] : ''}
-                                    onChange={e => {
-                                        const newDate = e.target.value ? new Date(e.target.value).toISOString() : '';
-                                        setData(prevData => prevData.map(l => l.Id === lead.Id ? {
-                                            ...l,
-                                            follow_up_date: newDate
-                                        } : l));
-
-                                        handleFieldUpdateDebounced(lead.Id, "follow_up_date", newDate);
-                                    }}
-                                    onBlur={e => {
-                                        const newDate = e.target.value ? new Date(e.target.value).toISOString() : '';
-                                        handleFieldUpdate(lead.Id, "follow_up_date", newDate);
-                                    }}
-                                    onKeyDown={e => {
-                                        if (e.key === "Enter") {
-                                            const newDate = e.target.value ? new Date(e.target.value).toISOString() : '';
-                                            handleFieldUpdate(lead.Id, "follow_up_date", newDate);
-                                        }
-                                    }}
-                                    className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full text-sm" />
+<td className="px-6 py-4 whitespace-nowrap min-w-[100px] relative">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                      type="url"
+                                      value={getDisplayValue(lead, 'linkedin_url')}
+                                      onChange={e => handleFieldChange(lead.Id, "linkedin_url", e.target.value)}
+                                      onBlur={e => handleImmediateSave(lead.Id, "linkedin_url", e.target.value)}
+                                      onKeyDown={e => handleKeyDown(e, lead.Id, "linkedin_url", e.target.value)}
+                                      placeholder="LinkedIn URL..."
+                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm flex-1" />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.linkedin_url && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                  {getDisplayValue(lead, 'linkedin_url') && (
+                                      <a
+                                          href={getDisplayValue(lead, 'linkedin_url')}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-primary-600 hover:text-primary-800 flex-shrink-0 p-1 hover:bg-gray-100 rounded"
+                                          title="Visit LinkedIn profile">
+                                          <ApperIcon name="Linkedin" size={16} />
+                                      </a>
+                                  )}
+                                </div>
+                            </td>
+</td>
+                            <td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
+                                <div className="flex items-center gap-2">
+                                  <div className="relative">
+                                      <Badge
+                                          variant={getStatusColor(getDisplayValue(lead, 'status'))}
+                                          className="cursor-pointer hover:shadow-md transition-shadow">
+                                          {getDisplayValue(lead, 'status')}
+                                      </Badge>
+                                      <select
+                                          value={getDisplayValue(lead, 'status')}
+                                          onChange={e => {
+                                            handleFieldChange(lead.Id, "status", e.target.value);
+                                            handleStatusChange(lead.Id, e.target.value);
+                                          }}
+                                          onKeyDown={e => handleKeyDown(e, lead.Id, "status", e.target.value)}
+                                          className="absolute inset-0 opacity-0 cursor-pointer w-full">
+                                          {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
+                                      </select>
+                                  </div>
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.status && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                            </td>
+<td className="px-6 py-4 whitespace-nowrap min-w-[140px] relative">
+                                <div className="flex items-center gap-2">
+                                  <div className="relative">
+                                      <Badge
+                                          variant={getDisplayValue(lead, 'funding_type') === "Series C" ? "primary" : "default"}
+                                          className="cursor-pointer hover:shadow-md transition-shadow">
+                                          {getDisplayValue(lead, 'funding_type')}
+                                      </Badge>
+                                      <select
+                                          value={getDisplayValue(lead, 'funding_type')}
+                                          onChange={e => {
+                                            handleFieldChange(lead.Id, "funding_type", e.target.value);
+                                            handleImmediateSave(lead.Id, "funding_type", e.target.value);
+                                          }}
+                                          onKeyDown={e => handleKeyDown(e, lead.Id, "funding_type", e.target.value)}
+                                          className="absolute inset-0 opacity-0 cursor-pointer w-full">
+                                          {fundingTypeOptions.map(option => <option key={option} value={option}>{option}</option>)}
+                                      </select>
+                                  </div>
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.funding_type && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                            </td>
+<td className="px-6 py-4 whitespace-nowrap min-w-[130px] relative">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                      type="date"
+                                      value={getDisplayValue(lead, 'follow_up_date') ? getDisplayValue(lead, 'follow_up_date').split('T')[0] : ''}
+                                      onChange={e => {
+                                          const newDate = e.target.value ? new Date(e.target.value).toISOString() : '';
+                                          handleFieldChange(lead.Id, "follow_up_date", newDate);
+                                      }}
+                                      onBlur={e => {
+                                          const newDate = e.target.value ? new Date(e.target.value).toISOString() : '';
+                                          handleImmediateSave(lead.Id, "follow_up_date", newDate);
+                                      }}
+                                      onKeyDown={e => {
+                                          const newDate = e.target.value ? new Date(e.target.value).toISOString() : '';
+                                          handleKeyDown(e, lead.Id, "follow_up_date", newDate);
+                                      }}
+                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full text-sm" />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.follow_up_date && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
                             </td>
                             <td
                                 className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px]">
@@ -1146,7 +1454,30 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
 </div>
         </div>
       )}
-    </Card>
+</Card>
+    
+    {/* Auto-save status indicator */}
+    {Object.keys(editingStates).length > 0 && (
+      <div className="fixed bottom-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50">
+        <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-1">
+            <ApperIcon name="Edit3" size={14} className="text-blue-600" />
+            <span className="text-gray-600">
+              {Object.keys(editingStates).length} row{Object.keys(editingStates).length > 1 ? 's' : ''} editing
+            </span>
+          </div>
+          <div className="text-xs text-gray-400 border-l border-gray-200 pl-2">
+            <div>Auto-save in 500ms</div>
+            <div className="flex items-center gap-1 mt-1">
+              <kbd className="px-1 py-0.5 text-xs bg-gray-100 border border-gray-200 rounded">Ctrl+S</kbd>
+              <span>Save</span>
+              <kbd className="px-1 py-0.5 text-xs bg-gray-100 border border-gray-200 rounded ml-2">Esc</kbd>
+              <span>Cancel</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
     
     {/* Bulk Actions */}
     {selectedLeads.length > 0 && (
