@@ -7,9 +7,9 @@ import Error from "@/components/ui/Error";
 import Loading from "@/components/ui/Loading";
 import Hotlist from "@/components/pages/Hotlist";
 import SearchBar from "@/components/molecules/SearchBar";
+import SearchBar from "@/components/molecules/SearchBar";
 import Card from "@/components/atoms/Card";
 import Input from "@/components/atoms/Input";
-import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
 import { createDeal, getDeals, updateDeal } from "@/services/api/dealsService";
 import { createLead, deleteLead, getLeads, updateLead } from "@/services/api/leadsService";
@@ -1297,11 +1297,10 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                   {savingStates[lead.Id] && editingStates[lead.Id]?.arr && (
                                     <div className="animate-spin">
                                       <ApperIcon name="Loader2" size={14} className="text-gray-400" />
-                                    </div>
+</div>
                                   )}
                                 </div>
                             </td>
-</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px] relative">
                                 <div className="flex items-center gap-2">
                                   <SearchableSelect
