@@ -235,24 +235,25 @@ const handleUpdateLead = async (leadId, updates) => {
   };
 
 // Validation functions
-  const validateField = (field, value, leadData = {}) => {
+const validateField = (field, value, leadData = {}) => {
     const errors = [];
     
     switch (field) {
       case 'Name':
+        if (!value || value.toString().trim() === '') {
+          errors.push('Name is required');
+        }
+        break;
       case 'website_url':
         if (!value || value.toString().trim() === '') {
-          errors.push(`${field === 'website_url' ? 'Website URL' : 'Name'} is required`);
+          errors.push('Website URL is required');
+        } else if (!value.match(/^https?:\/\/.+\..+/)) {
+          errors.push('Please enter a valid website URL');
         }
         break;
       case 'email':
         if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
           errors.push('Please enter a valid email address');
-        }
-        break;
-      case 'website_url':
-        if (value && !value.match(/^https?:\/\/.+\..+/)) {
-          errors.push('Please enter a valid website URL');
         }
         break;
     }
