@@ -40,54 +40,56 @@ const Leads = () => {
   const [pendingValidation, setPendingValidation] = useState({}); // Track validation errors
   const [savingStates, setSavingStates] = useState({}); // Track which rows are being saved
 
-// Validation functions
-  const validateField = (field, value, leadData = {}) => {
-    const errors = [];
-    
-    switch (field) {
-      case 'Name':
-        if (!value || (value && value.toString().trim() === '')) {
-          errors.push('Name is required');
-        }
-        break;
-      case 'website_url':
-        if (!value || (value && value.toString().trim() === '')) {
-          errors.push('Website URL is required');
-        } else if (value && !value.toString().match(/^https?:\/\/.+\..+/)) {
-          errors.push('Please enter a valid website URL');
-        }
-        break;
-      case 'email':
-        if (value && value.toString && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toString())) {
-          errors.push('Please enter a valid email address');
-        }
-        break;
-    }
-    
-    return errors;
-  };
+// Validation functions - moved to module level for accessibility by modal components
+const validateField = (field, value, leadData = {}) => {
+  const errors = [];
+  
+  switch (field) {
+    case 'Name':
+      if (!value || (value && value.toString().trim() === '')) {
+        errors.push('Name is required');
+      }
+      break;
+    case 'website_url':
+      if (!value || (value && value.toString().trim() === '')) {
+        errors.push('Website URL is required');
+      } else if (value && !value.toString().match(/^https?:\/\/.+\..+/)) {
+        errors.push('Please enter a valid website URL');
+      }
+      break;
+    case 'email':
+      if (value && value.toString && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toString())) {
+        errors.push('Please enter a valid email address');
+      }
+      break;
+  }
+  
+  return errors;
+};
 
-  const validateRow = (leadData) => {
-    const allErrors = {};
-    const requiredFields = ['Name', 'website_url'];
-    
-    requiredFields.forEach(field => {
-      const fieldErrors = validateField(field, leadData[field], leadData);
-      if (fieldErrors.length > 0) {
-        allErrors[field] = fieldErrors;
-      }
-    });
-    
-    // Validate optional fields if they have values
-    if (leadData.email) {
-      const emailErrors = validateField('email', leadData.email, leadData);
-      if (emailErrors.length > 0) {
-        allErrors.email = emailErrors;
-      }
+const validateRow = (leadData) => {
+  const allErrors = {};
+  const requiredFields = ['Name', 'website_url'];
+  
+  requiredFields.forEach(field => {
+    const fieldErrors = validateField(field, leadData[field], leadData);
+    if (fieldErrors.length > 0) {
+      allErrors[field] = fieldErrors;
     }
-    
-    return allErrors;
-  };
+  });
+  
+  // Validate optional fields if they have values
+  if (leadData.email) {
+    const emailErrors = validateField('email', leadData.email, leadData);
+    if (emailErrors.length > 0) {
+      allErrors.email = emailErrors;
+    }
+  }
+  
+  return allErrors;
+};
+
+function Leads() {
 
   useEffect(() => {
     loadLeads();
