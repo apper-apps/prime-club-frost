@@ -282,12 +282,17 @@ const handleUpdateLead = async (leadId, updates) => {
   };
 
 // Auto-save system
-  const performAutoSave = async (leadId, field, value, skipFullValidation = false) => {
+const performAutoSave = async (leadId, field, value, skipFullValidation = false) => {
     try {
+      // Validate leadId is a valid integer before proceeding
+      if (!leadId || typeof leadId !== 'number' || leadId <= 0 || !Number.isInteger(leadId)) {
+        console.warn(`Invalid leadId for auto-save: ${leadId}`);
+        return;
+      }
+
       // Get current lead data with optimistic updates
       const currentLead = data.find(lead => lead.Id === leadId);
       if (!currentLead) return;
-
       const updatedLead = {
         ...currentLead,
         ...optimisticData[leadId],

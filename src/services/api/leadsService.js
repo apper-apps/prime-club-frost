@@ -172,32 +172,66 @@ export const updateLead = async (id, updates) => {
   await delay(300);
   
   try {
+    // Validate ID is a valid integer
+    if (!id || typeof id !== 'number' || id <= 0 || !Number.isInteger(id)) {
+      throw new Error(`Invalid lead ID: ${id}. Must be a positive integer.`);
+    }
+
     const { ApperClient } = window.ApperSDK;
     const apperClient = new ApperClient({
       apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
       apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
     });
     
+    // Create record payload with only defined values
+    const recordData = { Id: id };
+    
+    // Only include fields that have actual values (not undefined/null)
+    if (updates.name !== undefined || updates.Name !== undefined) {
+      recordData.Name = updates.name || updates.Name;
+    }
+    if (updates.website_url !== undefined || updates.websiteUrl !== undefined) {
+      recordData.website_url = updates.website_url || updates.websiteUrl;
+    }
+    if (updates.team_size !== undefined || updates.teamSize !== undefined) {
+      recordData.team_size = updates.team_size || updates.teamSize;
+    }
+    if (updates.arr !== undefined) {
+      recordData.arr = updates.arr;
+    }
+    if (updates.category !== undefined) {
+      recordData.category = updates.category;
+    }
+    if (updates.linkedin_url !== undefined || updates.linkedinUrl !== undefined) {
+      recordData.linkedin_url = updates.linkedin_url || updates.linkedinUrl;
+    }
+    if (updates.status !== undefined) {
+      recordData.status = updates.status;
+    }
+    if (updates.funding_type !== undefined || updates.fundingType !== undefined) {
+      recordData.funding_type = updates.funding_type || updates.fundingType;
+    }
+    if (updates.edition !== undefined) {
+      recordData.edition = updates.edition;
+    }
+    if (updates.follow_up_date !== undefined || updates.followUpDate !== undefined) {
+      recordData.follow_up_date = updates.follow_up_date || updates.followUpDate;
+    }
+    if (updates.added_by !== undefined || updates.addedBy !== undefined) {
+      recordData.added_by = updates.added_by || updates.addedBy;
+    }
+    if (updates.added_by_name !== undefined || updates.addedByName !== undefined) {
+      recordData.added_by_name = updates.added_by_name || updates.addedByName;
+    }
+    if (updates.tags !== undefined || updates.Tags !== undefined) {
+      recordData.Tags = updates.tags || updates.Tags;
+    }
+    if (updates.owner !== undefined || updates.Owner !== undefined) {
+      recordData.Owner = updates.owner || updates.Owner;
+    }
+    
     const params = {
-      records: [
-        {
-          Id: id,
-          Name: updates.name || updates.Name,
-          website_url: updates.website_url || updates.websiteUrl,
-          team_size: updates.team_size || updates.teamSize,
-          arr: updates.arr,
-          category: updates.category,
-          linkedin_url: updates.linkedin_url || updates.linkedinUrl,
-          status: updates.status,
-          funding_type: updates.funding_type || updates.fundingType,
-          edition: updates.edition,
-          follow_up_date: updates.follow_up_date || updates.followUpDate,
-          added_by: updates.added_by || updates.addedBy,
-          added_by_name: updates.added_by_name || updates.addedByName,
-          Tags: updates.tags || updates.Tags,
-          Owner: updates.owner || updates.Owner
-        }
-      ]
+      records: [recordData]
     };
     
     const response = await apperClient.updateRecord('lead', params);
