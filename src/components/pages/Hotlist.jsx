@@ -91,10 +91,9 @@ const loadLeads = async () => {
           const dealData = {
             name: `${cleanUrl} - ${updatedLead.category || 'Unknown'}`,
             leadName: cleanUrl,
-            leadId: updatedLead.Id,
+leadId: updatedLead.Id,
             value: updatedLead.arr || 0,
             stage: targetStage,
-            assignedRep: 'Unassigned',
             assignedRep: 'Unassigned',
             startMonth: new Date().toISOString().split('T')[0],
             endMonth: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
