@@ -368,6 +368,17 @@ const performAutoSave = async (leadId, field, value, skipFullValidation = false)
             }
           }
 });*/
+        // Clear editing state with return
+        setEditingStates(prev => {
+          const newState = { ...prev };
+          if (newState[leadId]) {
+            delete newState[leadId][field];
+            if (Object.keys(newState[leadId]).length === 0) {
+              delete newState[leadId];
+            }
+          }
+          return newState; // ✅ ADD THIS
+        });
 
         // Success notification is handled by the service layer
       }
