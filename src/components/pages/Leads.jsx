@@ -1349,13 +1349,16 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                   )}
                                 </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px] relative">
+<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px] relative">
                                 <div className="flex items-center gap-2">
                                   <Input
                                       type="number"
                                       step="0.1"
                                       min="0"
-                                      value={(getDisplayValue(lead, 'arr') / 1000000).toFixed(1)}
+                                      value={(() => {
+                                        const arrValue = getDisplayValue(lead, 'arr');
+                                        return arrValue ? (arrValue / 1000000).toFixed(1) : '0.0';
+                                      })()}
                                       onChange={e => handleFieldChange(lead.Id, "arr", e.target.value)}
                                       onBlur={e => handleImmediateSave(lead.Id, "arr", e.target.value)}
                                       onKeyDown={e => handleKeyDown(e, lead.Id, "arr", e.target.value)}
@@ -1363,7 +1366,7 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                   {savingStates[lead.Id] && editingStates[lead.Id]?.arr && (
                                     <div className="animate-spin">
                                       <ApperIcon name="Loader2" size={14} className="text-gray-400" />
-</div>
+                                    </div>
                                   )}
                                 </div>
                             </td>
