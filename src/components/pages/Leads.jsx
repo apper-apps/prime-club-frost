@@ -1077,17 +1077,17 @@ const handleSort = (field) => {
           icon="Building2"
         />
       ) : (
-        <div className="relative">
+<div className="relative">
             {/* Top scrollbar for easier horizontal navigation */}
             <div 
               ref={setTopScrollbarRef}
               className="top-scrollbar overflow-x-auto border-b border-gray-200 bg-gray-50 mb-0"
               style={{ height: '17px' }}
             >
-              <div className="top-scrollbar-content" style={{ width: '1200px', height: '1px' }}></div>
+              <div className="top-scrollbar-content" style={{ width: '1530px', height: '1px' }}></div>
             </div>
             
-            <div 
+            <div
               ref={setTableScrollbarRef}
               className="overflow-x-auto"
             >
