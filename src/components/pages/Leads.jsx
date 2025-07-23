@@ -1128,9 +1128,9 @@ const handleSort = (field) => {
                             </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Category
-                                                    </th>
+</th>
                             <th
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">LinkedIn
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">LinkedIn
                                                     </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Status
@@ -1140,9 +1140,9 @@ const handleSort = (field) => {
                                                     </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[130px]">Follow-up Date
-                                                    </th>
+</th>
                             <th
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Added By
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px] pr-4">Added By
                                                     </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px] sticky right-0 bg-gray-50 border-l border-gray-200">Actions
@@ -1221,10 +1221,10 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                         placeholder="Select category..."
                                         className="text-gray-500"
                                         onCreateCategory={handleCreateCategory}
-                                    />
+/>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap min-w-[100px]">
-<Input
+                                <td className="px-6 py-4 whitespace-nowrap min-w-[180px]">
+                                <Input
                                         type="url"
                                         value={emptyRow.linkedin_url}
                                         onChange={e => handleEmptyRowUpdateDebounced(emptyRow.Id, "linkedin_url", e.target.value)}
@@ -1278,10 +1278,10 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                                 handleEmptyRowUpdate(emptyRow.Id, "follow_up_date", e.target.value ? new Date(e.target.value).toISOString() : '');
                                             }
                                         }}
-                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
+className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
                                 </td>
                                 <td
-                                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px]">
+                                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[140px] pr-4">
                                     <span className="italic">Current User</span>
                                 </td>
                                 <td
@@ -1387,9 +1387,9 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                       <ApperIcon name="Loader2" size={14} className="text-gray-400" />
                                     </div>
                                   )}
-                                </div>
+</div>
                             </td>
-<td className="px-6 py-4 whitespace-nowrap min-w-[100px] relative">
+                            <td className="px-6 py-4 whitespace-nowrap min-w-[180px] relative">
                                 <div className="flex items-center gap-2">
                                   <Input
                                       type="url"
@@ -1491,12 +1491,12 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                       <ApperIcon name="Loader2" size={14} className="text-gray-400" />
                                     </div>
                                   )}
-                                </div>
+</div>
                             </td>
                             <td
-                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px]">
+                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[140px] pr-4">
                                 <div className="flex items-center">
-<ApperIcon name="User" size={14} className="mr-2 text-gray-400" />
+                                <ApperIcon name="User" size={14} className="mr-2 text-gray-400" />
                                     <span>{lead.added_by_name || "Unknown"}</span>
                                 </div>
                             </td>
