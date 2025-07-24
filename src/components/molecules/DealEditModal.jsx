@@ -20,7 +20,7 @@ const DealEditModal = ({ isOpen, onClose, deal, onSave, isCreateMode = false }) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const stages = [
+const stages = [
     "Connected",
     "Locked", 
     "Meeting Booked",
