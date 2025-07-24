@@ -203,12 +203,13 @@ const handleInputChange = (field, value) => {
     }
   };
 
-  const handleLeadChange = (leadId) => {
+const handleLeadChange = (leadId) => {
     const selectedLead = leads.find(lead => lead.Id.toString() === leadId);
     if (selectedLead) {
       setFormData(prev => ({
         ...prev,
         leadName: selectedLead.Name,
+        leadId: selectedLead.Id.toString(),
         name: cleanDealName(selectedLead.Name)
       }));
       // Clear any errors for leadName field
