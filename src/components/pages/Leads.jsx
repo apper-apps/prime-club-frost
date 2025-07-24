@@ -1939,10 +1939,9 @@ required
               />
               {formErrors.Name && (
                 <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
+<div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
                   {formErrors.Name[0]}
                 </div>
-              )}
-            </div>
               )}
             </div>
           </div>
