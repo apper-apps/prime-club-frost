@@ -1,5 +1,10 @@
-// Dashboard Service - Centralized data management for dashboard components
+import React from "react";
+import { getDeals } from "@/services/api/dealsService";
+import { getSalesReps } from "@/services/api/salesRepService";
+import { getLeads, getPendingFollowUps } from "@/services/api/leadsService";
 import dashboardData from "@/services/mockData/dashboard.json";
+import Error from "@/components/ui/Error";
+// Dashboard Service - Centralized data management for dashboard components
 
 // Standardized API delay for consistent UX
 const API_DELAY = 300;
@@ -356,7 +361,7 @@ export const getUserLeadsReport = async (userId, period = 'today') => {
       return leadDate >= startDate && leadDate < endDate;
     });
     
-    // Sort by creation date (most recent first) and ensure data integrity
+// Sort by creation date (most recent first) and ensure data integrity
     return filteredLeads
       .map(lead => ({
         ...lead,
@@ -367,4 +372,11 @@ export const getUserLeadsReport = async (userId, period = 'today') => {
       }))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, fallback);
+};
+
+// Function to refresh dashboard metrics (called when deals are updated)
+export const refreshDashboardMetrics = async () => {
+  // This function can be called by other components to trigger dashboard refresh
+  // Returns the latest metrics to update dashboard state
+  return await getDashboardMetrics();
 };

@@ -177,11 +177,20 @@ const handleStatusChange = async (leadId, newStatus) => {
               endMonth: new Date().getMonth() + 3,
               edition: updatedLead.edition || "Select Edition"
             };
-            await createDeal(dealData);
+await createDeal(dealData);
+          }
+          
+          // Refresh dashboard metrics to reflect the updated deals count
+          try {
+            if (window.refreshDashboard) {
+              window.refreshDashboard();
+            }
+          } catch (dashboardError) {
+            console.warn("Failed to refresh dashboard metrics:", dashboardError);
           }
         } catch (dealError) {
           console.error("Failed to handle deal operation:", dealError);
-toast.warning("Lead status updated, but failed to sync with deal pipeline");
+          toast.warning("Lead status updated, but failed to sync with deal pipeline");
         }
       }
     } catch (err) {

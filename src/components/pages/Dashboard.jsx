@@ -162,12 +162,24 @@ useEffect(() => {
     loadSalesReps();
   }, []);
 
+  // Function to refresh dashboard data (can be called externally)
+  const refreshDashboard = () => {
+    loadDashboardData();
+  };
+
   useEffect(() => {
     if (selectedSalesRep) {
       loadDailyData();
     }
   }, [selectedSalesRep]);
 
+  // Make refresh function available globally for other components
+  useEffect(() => {
+    window.refreshDashboard = refreshDashboard;
+    return () => {
+      delete window.refreshDashboard;
+    };
+  }, []);
   if (loading) return <Loading type="cards" />;
   if (error) return <Error message={error} onRetry={loadDashboardData} />;
 
