@@ -146,10 +146,10 @@ const handleStatusChange = async (leadId, newStatus) => {
       const statusToStageMap = {
         "Connected": "Connected",
         "Locked": "Locked", 
-        "Meeting Booked": "Meeting Booked",
+"Meeting Booked": "Meeting Booked",
         "Meeting Done": "Meeting Done",
         "Negotiation": "Negotiation",
-        "Closed Lost": "Lost"
+        "Lost": "Lost"
       };
       
       // Check if status maps to a pipeline stage
@@ -880,10 +880,10 @@ const teamSizeOptions = ["1-3", "11-50", "201-500", "500+", "1001+"];
     "Workflow Automation",
     "Other"
   ]);
-  const statusOptions = [
+const statusOptions = [
     "Launched on AppSumo", "Launched on Prime Club", "Keep an Eye", "Rejected", 
     "Unsubscribed", "Outdated", "Hotlist", "Out of League", "Connected", 
-    "Locked", "Meeting Booked", "Meeting Done", "Negotiation", "Closed Lost"
+    "Locked", "Meeting Booked", "Meeting Done", "Negotiation", "Lost", "Closed"
   ];
   const fundingTypeOptions = ["Bootstrapped", "Pre-seed", "Y Combinator", "Angel", "Series A", "Series B", "Series C"];
 
@@ -907,10 +907,11 @@ const getStatusColor = (status) => {
       "Out of League": "error",
       "Connected": "info",
       "Locked": "warning",
-      "Meeting Booked": "primary",
+"Meeting Booked": "primary",
       "Meeting Done": "success",
       "Negotiation": "warning",
-      "Closed Lost": "error"
+      "Lost": "error",
+      "Closed": "success"
     };
     return colors[status] || "default";
   };
@@ -1027,10 +1028,11 @@ const handleSort = (field) => {
                     <option value="Out of League">Out of League</option>
                     <option value="Connected">Connected</option>
                     <option value="Locked">Locked</option>
-                    <option value="Meeting Booked">Meeting Booked</option>
+<option value="Meeting Booked">Meeting Booked</option>
                     <option value="Meeting Done">Meeting Done</option>
                     <option value="Negotiation">Negotiation</option>
-                    <option value="Closed Lost">Closed Lost</option>
+                    <option value="Lost">Lost</option>
+                    <option value="Closed">Closed</option>
                 </select>
                 <select
                     value={fundingFilter}
@@ -1895,10 +1897,11 @@ return (
               <option value="Out of League">Out of League</option>
               <option value="Connected">Connected</option>
               <option value="Locked">Locked</option>
-              <option value="Meeting Booked">Meeting Booked</option>
+<option value="Meeting Booked">Meeting Booked</option>
               <option value="Meeting Done">Meeting Done</option>
               <option value="Negotiation">Negotiation</option>
-              <option value="Closed Lost">Closed Lost</option>
+              <option value="Lost">Lost</option>
+              <option value="Closed">Closed</option>
             </select>
           </div>
           
@@ -2138,11 +2141,12 @@ required />
                         <option value="Out of League">Out of League</option>
                         <option value="Connected">Connected</option>
                         <option value="Locked">Locked</option>
-                        <option value="Meeting Booked">Meeting Booked</option>
+<option value="Meeting Booked">Meeting Booked</option>
                         <option value="Meeting Done">Meeting Done</option>
                         <option value="Negotiation">Negotiation</option>
-                        <option value="Closed Lost">Closed Lost</option>
-</select>
+                        <option value="Lost">Lost</option>
+                        <option value="Closed">Closed</option>
+                    </select>
             </div>
             
             <div>
