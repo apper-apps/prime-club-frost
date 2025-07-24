@@ -1259,11 +1259,11 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                 </td>
                                 <td
 className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
-<select
+                                    <select
                                         value={emptyRow.team_size}
                                         onChange={e => handleEmptyRowUpdate(emptyRow.Id, "team_size", e.target.value)}
-                                        className="border-0 bg-white p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full text-gray-500 relative z-50">
-                                        {teamSizeOptions.map(option => <option key={option} value={option} className="bg-white text-gray-900 py-1">{option}</option>)}
+                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full text-gray-500">
+                                        {teamSizeOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                     </select>
                                 </td>
                                 <td
@@ -1315,11 +1315,11 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                             className="cursor-pointer hover:shadow-md transition-shadow opacity-60">
                                             {emptyRow.status}
                                         </Badge>
-<select
+                                        <select
                                             value={emptyRow.status}
                                             onChange={e => handleEmptyRowUpdate(emptyRow.Id, "status", e.target.value)}
-                                            className="absolute inset-0 opacity-0 cursor-pointer w-full relative z-50">
-                                            {statusOptions.map(option => <option key={option} value={option} className="bg-white text-gray-900 py-1">{option}</option>)}
+                                            className="absolute inset-0 opacity-0 cursor-pointer w-full">
+                                            {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                         </select>
                                     </div>
                                 </td>
@@ -1330,11 +1330,11 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                             className="cursor-pointer hover:shadow-md transition-shadow opacity-60">
                                             {emptyRow.funding_type}
                                         </Badge>
-<select
+                                        <select
                                             value={emptyRow.funding_type}
                                             onChange={e => handleEmptyRowUpdate(emptyRow.Id, "funding_type", e.target.value)}
-                                            className="absolute inset-0 opacity-0 cursor-pointer w-full relative z-50">
-                                            {fundingTypeOptions.map(option => <option key={option} value={option} className="bg-white text-gray-900 py-1">{option}</option>)}
+                                            className="absolute inset-0 opacity-0 cursor-pointer w-full">
+                                            {fundingTypeOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                         </select>
 </div>
                                 </td>
@@ -1442,13 +1442,13 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                             </td>
 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px] relative">
                                 <div className="flex items-center gap-2">
-<select
+                                  <select
                                       value={getDisplayValue(lead, 'team_size')}
                                       onChange={e => handleFieldChange(lead.Id, "team_size", e.target.value)}
                                       onBlur={e => handleImmediateSave(lead.Id, "team_size", e.target.value)}
                                       onKeyDown={e => handleKeyDown(e, lead.Id, "team_size", e.target.value)}
-                                      className="border-0 bg-white p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full relative z-50">
-                                      {teamSizeOptions.map(option => <option key={option} value={option} className="bg-white text-gray-900 py-1">{option}</option>)}
+                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full">
+                                      {teamSizeOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                   </select>
                                   {savingStates[lead.Id] && editingStates[lead.Id]?.team_size && (
                                     <div className="animate-spin">
@@ -1532,15 +1532,15 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                           className="cursor-pointer hover:shadow-md transition-shadow">
                                           {getDisplayValue(lead, 'status')}
                                       </Badge>
-<select
+                                      <select
                                           value={getDisplayValue(lead, 'status')}
                                           onChange={e => {
                                             handleFieldChange(lead.Id, "status", e.target.value);
                                             handleStatusChange(lead.Id, e.target.value);
                                           }}
                                           onKeyDown={e => handleKeyDown(e, lead.Id, "status", e.target.value)}
-                                          className="absolute inset-0 opacity-0 cursor-pointer w-full relative z-50">
-                                          {statusOptions.map(option => <option key={option} value={option} className="bg-white text-gray-900 py-1">{option}</option>)}
+                                          className="absolute inset-0 opacity-0 cursor-pointer w-full">
+                                          {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                       </select>
                                   </div>
                                   {savingStates[lead.Id] && editingStates[lead.Id]?.status && (
@@ -1558,15 +1558,15 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                           className="cursor-pointer hover:shadow-md transition-shadow">
                                           {getDisplayValue(lead, 'funding_type')}
                                       </Badge>
-<select
+                                      <select
                                           value={getDisplayValue(lead, 'funding_type')}
                                           onChange={e => {
                                             handleFieldChange(lead.Id, "funding_type", e.target.value);
                                             handleImmediateSave(lead.Id, "funding_type", e.target.value);
                                           }}
                                           onKeyDown={e => handleKeyDown(e, lead.Id, "funding_type", e.target.value)}
-                                          className="absolute inset-0 opacity-0 cursor-pointer w-full relative z-50">
-                                          {fundingTypeOptions.map(option => <option key={option} value={option} className="bg-white text-gray-900 py-1">{option}</option>)}
+                                          className="absolute inset-0 opacity-0 cursor-pointer w-full">
+                                          {fundingTypeOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                       </select>
                                   </div>
                                   {savingStates[lead.Id] && editingStates[lead.Id]?.funding_type && (
