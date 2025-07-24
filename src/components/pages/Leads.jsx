@@ -1949,7 +1949,7 @@ required
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Website URL
             </label>
-<div className="relative">
+            <div className="relative">
               <Input
                 type="url"
                 value={formData.website_url}
@@ -2231,7 +2231,7 @@ onBlur={(e) => handleFieldValidation('Name', e.target.value)}
                         placeholder="Product Name"
                         required 
                     />
-                    {formErrors.Name && (
+{formErrors.Name && (
                       <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
                         {formErrors.Name[0]}
                       </div>
@@ -2239,7 +2239,7 @@ onBlur={(e) => handleFieldValidation('Name', e.target.value)}
                 </div>
             </div>
             
-<div>
+            <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Website URL
               </label>
