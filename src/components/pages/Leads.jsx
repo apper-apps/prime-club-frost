@@ -928,6 +928,7 @@ const getStatusColor = (status) => {
 const filteredAndSortedData = data
     .filter(lead => {
       const matchesSearch = !searchTerm || 
+        (lead.Name && lead.Name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         lead.website_url.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lead.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lead.team_size.toLowerCase().includes(searchTerm.toLowerCase());
@@ -1114,6 +1115,14 @@ const handleSort = (field) => {
                                 />
                             </th>
 <th
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                                <button
+                                    onClick={() => handleSort("Name")}
+                                    className="flex items-center gap-1 hover:text-gray-700">Name
+                                                            <ApperIcon name="ArrowUpDown" size={12} />
+                                </button>
+                            </th>
+                            <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                                 <button
                                     onClick={() => handleSort("website_url")}
@@ -1171,7 +1180,31 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 opacity-50"
                                     />
                                 </td>
-<td className="px-6 py-4 whitespace-nowrap min-w-[200px] relative">
+<td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
+                                    <Input
+                                        type="text"
+                                        value={emptyRow.Name || ""}
+                                        onChange={e => setEmptyRows(prev => prev.map(row => row.Id === emptyRow.Id ? {
+                                            ...row,
+                                            Name: e.target.value
+                                        } : row))}
+                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "Name", e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === "Enter") {
+                                                handleEmptyRowUpdate(emptyRow.Id, "Name", e.target.value);
+                                            }
+                                        }}
+                                        placeholder="Enter company name..."
+                                        className={`border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 font-medium placeholder-gray-400 ${
+                                          pendingValidation[emptyRow.Id]?.Name ? 'border-red-300 bg-red-50' : ''
+                                        }`} />
+                                    {pendingValidation[emptyRow.Id]?.Name && (
+                                      <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10">
+                                        {pendingValidation[emptyRow.Id].Name[0]}
+                                      </div>
+                                    )}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap min-w-[200px] relative">
                                     <Input
                                         type="url"
                                         value={emptyRow.website_url}
@@ -1318,7 +1351,30 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                 />
                             </td>
-<td className="px-6 py-4 whitespace-nowrap min-w-[200px] relative">
+<td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                      type="text"
+                                      value={getDisplayValue(lead, 'Name')}
+                                      onChange={e => handleFieldChange(lead.Id, "Name", e.target.value)}
+                                      onBlur={e => handleImmediateSave(lead.Id, "Name", e.target.value)}
+                                      onKeyDown={e => handleKeyDown(e, lead.Id, "Name", e.target.value)}
+                                      className={`border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 font-medium ${
+                                        pendingValidation[lead.Id]?.Name ? 'border-red-300 bg-red-50' : ''
+                                      }`} />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.Name && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                                {pendingValidation[lead.Id]?.Name && (
+                                  <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10">
+                                    {pendingValidation[lead.Id].Name[0]}
+                                  </div>
+                                )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap min-w-[200px] relative">
                                 <div className="flex items-center gap-2">
                                   <Input
                                       type="url"
@@ -1733,6 +1789,7 @@ const SearchableSelect = ({ value, onChange, options, placeholder = "Select...",
 
 const AddLeadModal = ({ onClose, onSubmit, categoryOptions, onCreateCategory }) => {
 const [formData, setFormData] = useState({
+    Name: "",
     website_url: "",
     team_size: "1-3",
     arr: "",
@@ -1803,6 +1860,34 @@ return (
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Website URL
 </label>
+            <div className="relative">
+              <Input
+                type="text"
+                value={formData.Name}
+                onChange={(e) => {
+                  setFormData({...formData, Name: e.target.value});
+                  // Clear errors when user starts typing
+                  if (formErrors.Name) {
+                    setFormErrors(prev => ({...prev, Name: undefined}));
+                  }
+                }}
+                onBlur={(e) => handleFieldValidation('Name', e.target.value)}
+                placeholder="Company Name"
+                className={formErrors.Name ? 'border-red-300 bg-red-50' : ''}
+                required
+              />
+              {formErrors.Name && (
+                <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
+                  {formErrors.Name[0]}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Website URL
+            </label>
 <div className="relative">
               <Input
                 type="url"
@@ -2038,6 +2123,36 @@ if (hasErrors) {
             </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Website URL
+                                </label>
+<div className="relative">
+                    <Input
+                        type="text"
+                        value={formData.Name}
+                        onChange={e => {
+                          setFormData({
+                              ...formData,
+                              Name: e.target.value
+                          });
+                          // Clear errors when user starts typing
+                          if (formErrors.Name) {
+                            setFormErrors(prev => ({...prev, Name: undefined}));
+                          }
+                        }}
+                        onBlur={(e) => handleFieldValidation('Name', e.target.value)}
+                        className={formErrors.Name ? 'border-red-300 bg-red-50' : ''}
+                        placeholder="Company Name"
+                        required 
+                    />
+                    {formErrors.Name && (
+                      <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
+                        {formErrors.Name[0]}
+                      </div>
+                    )}
+                </div>
+            </div>
+            
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Website URL
                                 </label>

@@ -1,6 +1,7 @@
 [
   {
     "Id": 1,
+    "Name": "Notion",
     "websiteUrl": "https://notion.so",
     "teamSize": "11-50",
     "arr": 150000,
@@ -15,6 +16,7 @@
   },
 {
     "Id": 2,
+    "Name": "Canva",
     "websiteUrl": "https://canva.com",
 "teamSize": "500+",
     "arr": 2500000,
@@ -29,6 +31,7 @@
   },
 {
     "Id": 3,
+    "Name": "Figma",
     "websiteUrl": "https://figma.com",
     "teamSize": "201-500",
     "arr": 1800000,
@@ -43,6 +46,7 @@
   },
 {
     "Id": 4,
+    "Name": "Stripe",
     "websiteUrl": "https://stripe.com",
     "teamSize": "1001+",
     "arr": 12000000,
@@ -57,6 +61,7 @@
   },
 {
     "Id": 5,
+    "Name": "Shopify",
     "websiteUrl": "https://shopify.com",
     "teamSize": "1001+",
     "arr": 8500000,
@@ -71,6 +76,7 @@
   },
 {
     "Id": 6,
+    "Name": "Slack",
     "websiteUrl": "https://slack.com",
 "teamSize": "500+",
     "arr": 4200000,
@@ -85,6 +91,7 @@
   },
 {
     "Id": 7,
+    "Name": "Zoom",
     "websiteUrl": "https://zoom.us",
     "teamSize": "1001+",
     "arr": 6800000,
@@ -97,8 +104,9 @@
     "addedByName": "Mike Davis",
     "createdAt": "2024-01-08T10:00:00Z"
   },
-  {
+{
     "Id": 8,
+    "Name": "Discord",
     "websiteUrl": "https://discord.com",
     "teamSize": "101-500",
     "arr": 320000,
@@ -111,8 +119,9 @@
     "addedByName": "Tom Wilson",
     "createdAt": "2024-12-19T15:10:00Z"
   },
-  {
+{
     "Id": 9,
+    "Name": "HubSpot",
     "websiteUrl": "https://hubspot.com",
     "teamSize": "1001+",
     "arr": 15000000,
@@ -124,8 +133,9 @@
     "addedByName": "Shashank Sharma",
     "createdAt": "2024-12-19T08:45:00Z"
   },
-  {
+{
     "Id": 10,
+    "Name": "Asana",
     "websiteUrl": "https://asana.com",
     "teamSize": "101-500",
 "arr": 950000,
@@ -137,8 +147,9 @@
     "addedByName": "Shashank Sharma",
     "createdAt": "2024-12-18T14:30:00Z"
   },
-  {
+{
     "Id": 11,
+    "Name": "Mailchimp",
     "websiteUrl": "https://mailchimp.com",
 "teamSize": "500+",
 "arr": 3200000,
@@ -150,8 +161,9 @@
     "addedByName": "Shashank Sharma",
     "createdAt": "2024-12-17T11:20:00Z"
   },
-  {
+{
     "Id": 12,
+    "Name": "Trello",
     "websiteUrl": "https://trello.com",
     "teamSize": "101-500",
 "arr": 420000,
@@ -163,8 +175,9 @@
     "addedByName": "Sarah Johnson",
     "createdAt": "2024-12-16T09:30:00Z"
   },
-  {
+{
     "Id": 13,
+    "Name": "GitHub",
     "websiteUrl": "https://github.com",
     "teamSize": "1001+",
 "arr": 25000000,
@@ -176,8 +189,9 @@
     "addedByName": "Mike Davis",
     "createdAt": "2024-12-15T16:45:00Z"
   },
-  {
+{
     "Id": 14,
+    "Name": "Monday.com",
     "websiteUrl": "https://monday.com",
     "teamSize": "201-500",
 "arr": 1200000,
@@ -189,8 +203,9 @@
     "addedByName": "Tom Wilson",
     "createdAt": "2024-12-14T11:20:00Z"
   },
-  {
+{
     "Id": 15,
+    "Name": "GitLab",
     "websiteUrl": "https://gitlab.com",
 "teamSize": "500+",
 "arr": 3800000,
@@ -202,8 +217,9 @@
     "addedByName": "Emily Chen",
     "createdAt": "2024-12-13T14:10:00Z"
   },
-  {
+{
     "Id": 16,
+    "Name": "Mixpanel",
     "websiteUrl": "https://mixpanel.com",
     "teamSize": "101-500",
 "arr": 890000,
@@ -215,8 +231,9 @@
     "addedByName": "Alex Rodriguez",
     "createdAt": "2024-12-12T08:30:00Z"
   },
-  {
+{
     "Id": 17,
+    "Name": "Amplitude",
     "websiteUrl": "https://amplitude.com",
     "teamSize": "201-500",
 "arr": 1600000,
@@ -228,8 +245,9 @@
     "addedByName": "Shashank Sharma",
     "createdAt": "2024-12-11T13:45:00Z"
   },
-  {
+{
     "Id": 18,
+    "Name": "BambooHR",
     "websiteUrl": "https://bamboohr.com",
     "teamSize": "201-500",
 "arr": 720000,
@@ -241,8 +259,9 @@
     "addedByName": "Sarah Johnson",
     "createdAt": "2024-12-10T10:15:00Z"
   },
-  {
+{
     "Id": 19,
+    "Name": "Workday",
     "websiteUrl": "https://workday.com",
     "teamSize": "1001+",
 "arr": 45000000,
@@ -254,8 +273,9 @@
     "addedByName": "Mike Davis",
     "createdAt": "2024-12-09T15:20:00Z"
   },
-  {
+{
     "Id": 20,
+    "Name": "Salesforce",
     "websiteUrl": "https://salesforce.com",
     "teamSize": "1001+",
     "arr": 31000000,
@@ -267,8 +287,9 @@
     "addedByName": "Tom Wilson",
     "createdAt": "2024-11-28T09:30:00Z"
   },
-  {
+{
     "Id": 21,
+    "Name": "Pipedrive",
     "websiteUrl": "https://pipedrive.com",
     "teamSize": "201-500",
     "arr": 1400000,
@@ -280,8 +301,9 @@
     "addedByName": "Emily Chen",
     "createdAt": "2024-11-25T12:10:00Z"
   },
-  {
+{
     "Id": 22,
+    "Name": "Outreach",
     "websiteUrl": "https://outreach.io",
 "teamSize": "500+",
 "arr": 2800000,
@@ -293,8 +315,9 @@
     "addedByName": "Alex Rodriguez",
     "createdAt": "2024-11-20T16:45:00Z"
   },
-  {
+{
     "Id": 23,
+    "Name": "SalesLoft",
     "websiteUrl": "https://salesloft.com",
     "teamSize": "201-500",
 "arr": 1900000,
@@ -306,8 +329,9 @@
     "addedByName": "Shashank Sharma",
     "createdAt": "2024-11-18T11:30:00Z"
   },
-  {
+{
     "Id": 24,
+    "Name": "Typeform",
     "websiteUrl": "https://typeform.com",
     "teamSize": "101-500",
 "arr": 650000,
@@ -319,8 +343,9 @@
     "addedByName": "Sarah Johnson",
     "createdAt": "2024-11-15T14:20:00Z"
   },
-  {
+{
     "Id": 25,
+    "Name": "Airtable",
     "websiteUrl": "https://airtable.com",
     "teamSize": "201-500",
 "arr": 1100000,
@@ -332,8 +357,9 @@
     "addedByName": "Mike Davis",
     "createdAt": "2024-11-12T08:15:00Z"
   },
-  {
+{
     "Id": 26,
+    "Name": "Webflow",
     "websiteUrl": "https://webflow.com",
     "teamSize": "101-500",
 "arr": 780000,
@@ -345,8 +371,9 @@
     "addedByName": "Tom Wilson",
     "createdAt": "2024-11-08T13:50:00Z"
   },
-  {
+{
     "Id": 27,
+    "Name": "Zapier",
     "websiteUrl": "https://zapier.com",
     "teamSize": "201-500",
 "arr": 1350000,
@@ -358,8 +385,9 @@
     "addedByName": "Emily Chen",
     "createdAt": "2024-11-05T10:40:00Z"
   },
-  {
+{
     "Id": 28,
+    "Name": "Intercom",
     "websiteUrl": "https://intercom.com",
 "teamSize": "500+",
 "arr": 2200000,
@@ -371,8 +399,9 @@
     "addedByName": "Alex Rodriguez",
     "createdAt": "2024-11-02T15:25:00Z"
   },
-  {
+{
     "Id": 29,
+    "Name": "Zendesk",
     "websiteUrl": "https://zendesk.com",
     "teamSize": "1001+",
 "arr": 9500000,
@@ -384,8 +413,9 @@
     "addedByName": "Shashank Sharma",
     "createdAt": "2024-10-30T09:10:00Z"
   },
-  {
+{
     "Id": 30,
+    "Name": "Square",
     "websiteUrl": "https://square.com",
     "teamSize": "1001+",
 "arr": 18000000,
@@ -397,8 +427,9 @@
     "addedByName": "Sarah Johnson",
     "createdAt": "2024-10-28T12:35:00Z"
   },
-  {
+{
     "Id": 31,
+    "Name": "Twilio",
     "websiteUrl": "https://twilio.com",
     "teamSize": "1001+",
 "arr": 11000000,
@@ -410,8 +441,9 @@
     "addedByName": "Mike Davis",
     "createdAt": "2024-10-25T16:20:00Z"
   },
-  {
+{
     "Id": 32,
+    "Name": "Segment",
     "websiteUrl": "https://segment.com",
     "teamSize": "201-500",
 "arr": 1700000,
@@ -423,8 +455,9 @@
     "addedByName": "Tom Wilson",
     "createdAt": "2024-10-22T11:45:00Z"
   },
-  {
+{
     "Id": 33,
+    "Name": "Miro",
     "websiteUrl": "https://miro.com",
     "teamSize": "201-500",
 "arr": 1250000,
@@ -436,8 +469,9 @@
     "addedByName": "Emily Chen",
     "createdAt": "2024-10-18T14:30:00Z"
   },
-  {
+{
     "Id": 34,
+    "Name": "Loom",
     "websiteUrl": "https://loom.com",
     "teamSize": "51-100",
 "arr": 280000,
@@ -449,8 +483,9 @@
     "addedByName": "Alex Rodriguez",
     "createdAt": "2024-10-15T08:50:00Z"
   },
-  {
+{
     "Id": 35,
+    "Name": "Calendly",
     "websiteUrl": "https://calendly.com",
     "teamSize": "101-500",
 "arr": 540000,
@@ -462,8 +497,9 @@
     "addedByName": "Shashank Sharma",
     "createdAt": "2024-10-12T13:15:00Z"
   },
-  {
+{
     "Id": 36,
+    "Name": "Freshworks",
     "websiteUrl": "https://freshworks.com",
 "teamSize": "500+",
     "arr": 3500000,
@@ -475,8 +511,9 @@
     "addedByName": "Sarah Johnson",
     "createdAt": "2024-10-08T10:25:00Z"
   },
-  {
+{
     "Id": 37,
+    "Name": "Datadog",
     "websiteUrl": "https://datadog.com",
     "teamSize": "1001+",
 "arr": 22000000,
@@ -488,8 +525,9 @@
     "addedByName": "Mike Davis",
     "createdAt": "2024-10-05T15:40:00Z"
   },
-  {
+{
     "Id": 38,
+    "Name": "DocuSign",
     "websiteUrl": "https://docusign.com",
     "teamSize": "1001+",
 "arr": 16000000,
@@ -501,8 +539,9 @@
     "addedByName": "Tom Wilson",
     "createdAt": "2024-09-28T09:20:00Z"
   },
-  {
+{
     "Id": 39,
+    "Name": "Dropbox",
     "websiteUrl": "https://dropbox.com",
     "teamSize": "1001+",
 "arr": 7200000,
@@ -514,8 +553,9 @@
     "addedByName": "Emily Chen",
     "createdAt": "2024-09-25T12:55:00Z"
   },
-  {
+{
     "Id": 40,
+    "Name": "Okta",
     "websiteUrl": "https://okta.com",
     "teamSize": "1001+",
 "arr": 13000000,
