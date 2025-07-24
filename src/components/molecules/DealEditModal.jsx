@@ -5,7 +5,7 @@ import Card from "@/components/atoms/Card";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
 import ApperIcon from "@/components/ApperIcon";
-
+import { getLeads } from "@/services/api/leadsService";
 const DealEditModal = ({ isOpen, onClose, deal, onSave, isCreateMode = false }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -16,10 +16,11 @@ const DealEditModal = ({ isOpen, onClose, deal, onSave, isCreateMode = false }) 
     assignedRep: "",
     startMonth: "",
     endMonth: ""
-  });
+});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
-
+  const [leads, setLeads] = useState([]);
+  const [loadingLeads, setLoadingLeads] = useState(false);
 const stages = [
     "Connected",
     "Locked", 
@@ -58,8 +59,40 @@ const stages = [
     { value: 12, label: "December" }
   ];
 
-useEffect(() => {
+// Clean deal name by removing URL protocols and "Deal" suffix
+  const cleanDealName = (name) => {
+    if (!name) return "";
+    
+    let cleaned = name;
+    
+    // Remove URL protocols
+    cleaned = cleaned.replace(/^https?:\/\//, "");
+    
+    // Remove "Deal" suffix (case insensitive, with optional preceding space)
+    cleaned = cleaned.replace(/\s*deal\s*$/i, "");
+    
+    return cleaned.trim();
+  };
+
+  useEffect(() => {
+    const loadLeads = async () => {
+      if (isCreateMode && isOpen) {
+        setLoadingLeads(true);
+        try {
+          const leadsData = await getLeads();
+          setLeads(leadsData);
+        } catch (error) {
+          console.error("Error loading leads:", error);
+          toast.error("Failed to load leads");
+        } finally {
+          setLoadingLeads(false);
+        }
+      }
+    };
+
     if (isOpen) {
+      loadLeads();
+      
       if (isCreateMode) {
         // Clear form for create mode
         setFormData({
@@ -73,9 +106,10 @@ useEffect(() => {
           endMonth: ""
         });
       } else if (deal) {
-        // Populate form for edit mode
+        // Populate form for edit mode with cleaned deal name
+        const cleanedName = cleanDealName(deal.name || deal.Name || "");
         setFormData({
-          name: deal.name || deal.Name || "",
+          name: cleanedName,
           leadName: deal.leadName || deal.lead_name || "",
           value: deal.value?.toString() || "",
           stage: deal.stage || "",
@@ -122,7 +156,7 @@ useEffect(() => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -132,9 +166,12 @@ useEffect(() => {
     
     setIsSubmitting(true);
     
-try {
+    try {
+      // Clean the deal name before submission
+      const cleanedDealName = cleanDealName(formData.name);
+      
       const dealData = {
-        name: formData.name,
+        name: cleanedDealName,
         leadName: formData.leadName,
         value: Number(formData.value),
         stage: formData.stage,
@@ -159,10 +196,25 @@ try {
     }
   };
 
-  const handleInputChange = (field, value) => {
+const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleLeadChange = (leadId) => {
+    const selectedLead = leads.find(lead => lead.Id.toString() === leadId);
+    if (selectedLead) {
+      setFormData(prev => ({
+        ...prev,
+        leadName: selectedLead.Name,
+        name: cleanDealName(selectedLead.Name)
+      }));
+      // Clear any errors for leadName field
+      if (errors.leadName) {
+        setErrors(prev => ({ ...prev, leadName: "" }));
+      }
     }
   };
 
@@ -221,16 +273,47 @@ try {
                     )}
                   </div>
 
-                  <div>
+<div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Lead Name *
                     </label>
-                    <Input
-                      value={formData.leadName}
-                      onChange={(e) => handleInputChange("leadName", e.target.value)}
-                      placeholder="Enter lead name"
-                      className={errors.leadName ? "border-red-500" : ""}
-                    />
+                    {isCreateMode ? (
+                      <div>
+                        <select
+                          value={formData.leadName ? leads.find(lead => lead.Name === formData.leadName)?.Id || "" : ""}
+                          onChange={(e) => handleLeadChange(e.target.value)}
+                          className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                            errors.leadName ? "border-red-500" : ""
+                          }`}
+                          disabled={loadingLeads}
+                        >
+                          <option value="">
+                            {loadingLeads ? "Loading leads..." : "Select a lead"}
+                          </option>
+                          {leads.map(lead => (
+                            <option key={lead.Id} value={lead.Id}>
+                              {lead.Name}
+                            </option>
+                          ))}
+                        </select>
+                        {formData.leadName && (
+                          <Input
+                            value={formData.leadName}
+                            onChange={(e) => handleInputChange("leadName", e.target.value)}
+                            placeholder="Lead name will auto-populate"
+                            className="mt-2"
+                            readOnly
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <Input
+                        value={formData.leadName}
+                        onChange={(e) => handleInputChange("leadName", e.target.value)}
+                        placeholder="Enter lead name"
+                        className={errors.leadName ? "border-red-500" : ""}
+                      />
+                    )}
                     {errors.leadName && (
                       <p className="text-red-500 text-sm mt-1">{errors.leadName}</p>
                     )}
