@@ -8,7 +8,7 @@ import ApperIcon from "@/components/ApperIcon";
 import Hotlist from "@/components/pages/Hotlist";
 import Badge from "@/components/atoms/Badge";
 import Card from "@/components/atoms/Card";
-import Input from "@/components/atoms/Input";
+import { Input } from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
 import SearchBar from "@/components/molecules/SearchBar";
 import Error from "@/components/ui/Error";
@@ -1869,8 +1869,6 @@ onSubmit({
       arr: Number(formData.arr)
     });
   };
-
-return (
 return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-sm sm:max-w-md lg:max-w-lg max-h-[90vh] flex flex-col">
