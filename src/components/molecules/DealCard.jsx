@@ -44,8 +44,8 @@ const DealCard = ({ deal, index, onEdit }) => {
           }`}>
 <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
-                <h4 className="font-semibold text-gray-900 mb-1">{deal.name}</h4>
-                <p className="text-sm text-gray-600">{deal.leadName}</p>
+                <h4 className="font-semibold text-gray-900 mb-1">{deal.Name}</h4>
+                <p className="text-sm text-gray-600">{deal.lead_name}</p>
               </div>
               <div className="flex flex-col items-end gap-2">
                 {deal.edition && deal.edition !== "Select Edition" && (
@@ -77,14 +77,14 @@ const DealCard = ({ deal, index, onEdit }) => {
               )}
             </div>
             
-            <div className="flex items-center justify-between">
+<div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Avatar name={deal.assignedRep} size="sm" />
-                <span className="ml-2 text-sm text-gray-600">{deal.assignedRep}</span>
+                <Avatar name={deal.assigned_rep} size="sm" />
+                <span className="ml-2 text-sm text-gray-600">{deal.assigned_rep}</span>
               </div>
               <div className="flex items-center text-xs text-gray-500">
                 <ApperIcon name="Calendar" size={12} className="mr-1" />
-                <span>{new Date(deal.createdAt).toLocaleDateString()}</span>
+                <span>{new Date(deal.created_at).toLocaleDateString()}</span>
               </div>
             </div>
           </Card>
