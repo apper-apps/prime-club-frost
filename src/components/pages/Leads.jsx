@@ -1871,16 +1871,17 @@ onSubmit({
   };
 
 return (
+return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b flex-shrink-0">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-sm sm:max-w-md lg:max-w-lg max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b flex-shrink-0">
           <h3 className="text-lg font-semibold">Add New Lead</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <ApperIcon name="X" size={20} />
           </button>
         </div>
-<div className="overflow-y-auto max-h-[70vh] flex-1">
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+</div>
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3 sm:space-y-4">
 <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Company Name
@@ -2059,14 +2060,14 @@ return (
             </select>
           </div>
           
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+<div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="w-full sm:w-auto">
               Add Lead
             </Button>
-</div>
+          </div>
           </form>
         </div>
       </div>
@@ -2137,17 +2138,18 @@ onSubmit(lead.Id, {
     });
   };
 
-  return (
+return (
     <div
-    className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between p-6 border-b">
+    className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-lg shadow-xl w-full max-w-sm sm:max-w-md lg:max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b flex-shrink-0">
             <h3 className="text-lg font-semibold">Edit Lead</h3>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
                 <ApperIcon name="X" size={20} />
             </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <div className="overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3 sm:space-y-4">
             <div>
 <label className="block text-sm font-medium text-gray-700 mb-1">Company Name
                 </label>
@@ -2335,15 +2337,16 @@ required />
 </select>
             </div>
             
-            <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={onClose}>
+<div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4">
+                <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
                     Cancel
                 </Button>
-                <Button type="submit">
+                <Button type="submit" className="w-full sm:w-auto">
                     Update Lead
                 </Button>
             </div>
-</form>
+        </form>
+        </div>
     </div>
 </div>
   );
