@@ -1120,14 +1120,14 @@ const handleSort = (field) => {
               className="top-scrollbar overflow-x-auto border-b border-gray-200 bg-gray-50 mb-0"
               style={{ height: '17px' }}
             >
-              <div className="top-scrollbar-content" style={{ width: '1530px', height: '1px' }}></div>
+<div className="top-scrollbar-content" style={{ width: '1630px', height: '1px' }}></div>
             </div>
             
             <div
               ref={setTableScrollbarRef}
               className="overflow-x-auto"
             >
-                <table className="w-full min-w-[1200px]">
+                <table className="w-full min-w-[1300px]">
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[50px]">
@@ -1181,7 +1181,10 @@ const handleSort = (field) => {
                             </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">Funding Type
-                                                    </th>
+</th>
+                            <th
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Edition
+                            </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[130px]">Follow-up Date
 </th>
@@ -1334,6 +1337,20 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                             {fundingTypeOptions.map(option => <option key={option} value={option}>{option}</option>)}
                                         </select>
 </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap min-w-[120px]">
+                                    <Input
+                                        type="text"
+                                        value={emptyRow.edition || "Select Edition"}
+                                        onChange={e => handleEmptyRowUpdateDebounced(emptyRow.Id, "edition", e.target.value)}
+                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "edition", e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === "Enter") {
+                                                handleEmptyRowUpdate(emptyRow.Id, "edition", e.target.value);
+                                            }
+                                        }}
+                                        placeholder="Select Edition..."
+                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap min-w-[130px]">
 <Input
@@ -1553,6 +1570,23 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                       </select>
                                   </div>
                                   {savingStates[lead.Id] && editingStates[lead.Id]?.funding_type && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap min-w-[120px] relative">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                      type="text"
+                                      value={getDisplayValue(lead, 'edition')}
+                                      onChange={e => handleFieldChange(lead.Id, "edition", e.target.value)}
+                                      onBlur={e => handleImmediateSave(lead.Id, "edition", e.target.value)}
+                                      onKeyDown={e => handleKeyDown(e, lead.Id, "edition", e.target.value)}
+                                      placeholder="Select Edition..."
+                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full text-sm" />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.edition && (
                                     <div className="animate-spin">
                                       <ApperIcon name="Loader2" size={14} className="text-gray-400" />
                                     </div>
@@ -1821,7 +1855,8 @@ const [formData, setFormData] = useState({
     linkedin_url: "",
     status: "Keep an Eye",
     funding_type: "Bootstrapped",
-    edition: "Select Edition"
+    edition: "Select Edition",
+    follow_up_date: ""
   });
   
   const [formErrors, setFormErrors] = useState({});
@@ -2041,7 +2076,7 @@ return (
               <option value="Series B">Series B</option>
               <option value="Series C">Series C</option>
 </select>
-          </div>
+</div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2057,6 +2092,30 @@ return (
               <option value="Collector's Edition">Collector's Edition</option>
               <option value="Limited Edition">Limited Edition</option>
             </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Follow-up Date
+            </label>
+            <Input
+              type="date"
+              value={formData.follow_up_date ? formData.follow_up_date.split('T')[0] : ''}
+              onChange={(e) => setFormData({...formData, follow_up_date: e.target.value ? new Date(e.target.value).toISOString() : ''})}
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Added By
+            </label>
+            <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600">
+              <div className="flex items-center gap-2">
+                <ApperIcon name="User" size={16} className="text-gray-400" />
+                <span>Current User</span>
+              </div>
+            </div>
           </div>
           
           <div className="flex justify-end gap-3 pt-4">
