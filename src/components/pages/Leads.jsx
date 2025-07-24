@@ -2137,22 +2137,23 @@ onSubmit(lead.Id, {
     });
   };
 
-  return (
-    <div
-    className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between p-6 border-b">
-            <h3 className="text-lg font-semibold">Edit Lead</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-                <ApperIcon name="X" size={20} />
-            </button>
+return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl mx-2 sm:mx-4 max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b flex-shrink-0">
+          <h3 className="text-base sm:text-lg font-semibold">Edit Lead</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+            <ApperIcon name="X" size={20} />
+          </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div>
-<label className="block text-sm font-medium text-gray-700 mb-1">Company Name
-                </label>
-<div className="relative">
-                    <Input
+        <div className="overflow-y-auto max-h-[75vh] sm:max-h-[70vh] flex-1">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+<div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                Company Name
+              </label>
+              <div className="relative">
+                <Input
                         type="text"
                         value={formData.Name}
                         onChange={e => {
@@ -2178,11 +2179,12 @@ onSubmit(lead.Id, {
                 </div>
             </div>
             
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Website URL
-                                </label>
-<div className="relative">
-                    <Input
+<div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                Website URL
+              </label>
+              <div className="relative">
+                <Input
                         type="url"
                         value={formData.website_url}
                         detectUrlPrefix={true}
@@ -2209,27 +2211,30 @@ onSubmit(lead.Id, {
                 </div>
             </div>
             
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Team Size
-                </label>
-<select
-                        value={formData.team_size}
-                        onChange={e => setFormData({
-                            ...formData,
-                            team_size: e.target.value
-})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+<div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                Team Size
+              </label>
+              <select
+                value={formData.team_size}
+onChange={e => setFormData({
+                  ...formData,
+                  team_size: e.target.value
+                })}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
 <option value="1-3">1-3</option>
                     <option value="11-50">11-50</option>
                     <option value="201-500">201-500</option>
                     <option value="500+">500+</option>
-                    <option value="1001+">1001+</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ARR (USD)
-                                    </label>
-                    <Input
+<option value="1001+">1001+</option>
+                </select>
+            </div>
+            
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                ARR (USD)
+              </label>
+              <Input
                         type="number"
                         value={formData.arr}
                         onChange={e => setFormData({
@@ -2240,28 +2245,30 @@ onSubmit(lead.Id, {
 </div>
             
             <div>
-<label className="block text-sm font-medium text-gray-700 mb-1">Category
-                </label>
-                <div className="relative">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                Category
+              </label>
+              <div className="relative">
                     <SearchableSelect
                         value={formData.category}
                         onChange={(value) => setFormData({
                             ...formData,
                                 category: value
                             })}
-                            options={categoryOptions}
-                            placeholder="Select category..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+options={categoryOptions}
+                  placeholder="Select category..."
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                             onCreateCategory={onCreateCategory}
                         />
                 </div>
             </div>
             
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL
-                                    </label>
-<Input
-                        type="url"
+<div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                LinkedIn URL
+              </label>
+              <Input
+                type="url"
                         value={formData.linkedin_url}
                         onChange={e => setFormData({
                             ...formData,
@@ -2270,16 +2277,17 @@ onSubmit(lead.Id, {
 required />
             </div>
             
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status
-                                    </label>
-                    <select
-                        value={formData.status}
+<div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              <select
+                value={formData.status}
                         onChange={e => setFormData({
                             ...formData,
                             status: e.target.value
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+})}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="Launched on AppSumo">Launched on AppSumo</option>
                         <option value="Launched on Prime Club">Launched on Prime Club</option>
                         <option value="Keep an Eye">Keep an Eye</option>
@@ -2298,16 +2306,17 @@ required />
                     </select>
             </div>
             
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Funding Type
-                                    </label>
-<select
-                        value={formData.funding_type}
+<div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                Funding Type
+              </label>
+              <select
+                value={formData.funding_type}
                         onChange={e => setFormData({
                             ...formData,
                             funding_type: e.target.value
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+})}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="Bootstrapped">Bootstrapped</option>
                         <option value="Pre-seed">Pre-seed</option>
                         <option value="Y Combinator">Y Combinator</option>
@@ -2318,16 +2327,17 @@ required />
                     </select>
             </div>
             
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Edition
-                                    </label>
-                    <select
-                        value={formData.edition}
+<div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                Edition
+              </label>
+              <select
+                value={formData.edition}
                         onChange={e => setFormData({
                             ...formData,
                             edition: e.target.value
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+})}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="Select Edition">Select Edition</option>
                         <option value="Black Edition">Black Edition</option>
                         <option value="Collector's Edition">Collector's Edition</option>
@@ -2335,18 +2345,27 @@ required />
 </select>
             </div>
             
-            <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={onClose}>
-                    Cancel
-                </Button>
-                <Button type="submit">
-                    Update Lead
-                </Button>
+<div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit"
+                className="w-full sm:w-auto order-1 sm:order-2"
+              >
+                Update Lead
+              </Button>
             </div>
-</form>
+          </form>
+        </div>
+      </div>
     </div>
-</div>
-  );
+);
 };
 
 const BulkDeleteConfirmationDialog = ({ selectedCount, onConfirm, onCancel }) => {
