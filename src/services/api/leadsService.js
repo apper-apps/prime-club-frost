@@ -1,4 +1,7 @@
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import React from "react";
+import { getPendingFollowUps } from "@/services/api/dashboardService";
+import Error from "@/components/ui/Error";
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -12,9 +15,10 @@ export const getLeads = async () => {
       apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
     });
     
-    const params = {
+const params = {
       fields: [
         { field: { Name: "Name" } },
+        { field: { Name: "email" } },
         { field: { Name: "website_url" } },
         { field: { Name: "team_size" } },
         { field: { Name: "arr" } },
@@ -64,9 +68,10 @@ export const getLeadById = async (id) => {
       apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
     });
     
-    const params = {
+const params = {
       fields: [
         { field: { Name: "Name" } },
+        { field: { Name: "email" } },
         { field: { Name: "website_url" } },
         { field: { Name: "team_size" } },
         { field: { Name: "arr" } },
@@ -122,10 +127,11 @@ export const createLead = async (leadData) => {
       console.warn(`Invalid team_size value provided: "${providedTeamSize}". Using default "1-3". Valid values are:`, validTeamSizes);
     }
     
-    const params = {
+const params = {
       records: [
         {
           Name: leadData.name || leadData.Name,
+          email: leadData.email,
           website_url: leadData.website_url || leadData.websiteUrl,
           team_size: validatedTeamSize,
           arr: leadData.arr || 0,
@@ -201,9 +207,12 @@ export const updateLead = async (id, updates) => {
     // Create record payload with only defined values
     const recordData = { Id: id };
     
-    // Only include fields that have actual values (not undefined/null)
+// Only include fields that have actual values (not undefined/null)
     if (updates.name !== undefined || updates.Name !== undefined) {
       recordData.Name = updates.name || updates.Name;
+    }
+    if (updates.email !== undefined) {
+      recordData.email = updates.email;
     }
     if (updates.website_url !== undefined || updates.websiteUrl !== undefined) {
       recordData.website_url = updates.website_url || updates.websiteUrl;
@@ -242,7 +251,7 @@ export const updateLead = async (id, updates) => {
     if (updates.added_by !== undefined || updates.addedBy !== undefined) {
       recordData.added_by = updates.added_by || updates.addedBy;
     }
-    if (updates.added_by_name !== undefined || updates.addedByName !== undefined) {
+if (updates.added_by_name !== undefined || updates.addedByName !== undefined) {
       recordData.added_by_name = updates.added_by_name || updates.addedByName;
     }
     if (updates.tags !== undefined || updates.Tags !== undefined) {
@@ -251,10 +260,10 @@ export const updateLead = async (id, updates) => {
     if (updates.owner !== undefined || updates.Owner !== undefined) {
       recordData.Owner = updates.owner || updates.Owner;
     }
+    
     const params = {
       records: [recordData]
     };
-    
     const response = await apperClient.updateRecord('lead', params);
     
     if (!response.success) {

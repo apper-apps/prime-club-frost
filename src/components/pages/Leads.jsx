@@ -29,7 +29,7 @@ const validateField = (field, value, leadData = {}) => {
         errors.push('Website URL is required');
       } else if (value && value?.toString && !value.toString().match(/^https?:\/\/.+\..+/)) {
         errors.push('Please enter a valid website URL');
-      }
+}
       break;
     case 'email':
       if (value && value?.toString && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toString())) {
@@ -1147,6 +1147,14 @@ const handleSort = (field) => {
                                 </button>
                             </th>
                             <th
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">
+                                <button
+                                    onClick={() => handleSort("email")}
+                                    className="flex items-center gap-1 hover:text-gray-700">Email
+                                                            <ApperIcon name="ArrowUpDown" size={12} />
+                                </button>
+                            </th>
+                            <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                                 <button
                                     onClick={() => handleSort("website_url")}
@@ -1228,6 +1236,30 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                     {pendingValidation[emptyRow.Id]?.Name && (
                                       <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10">
                                         {pendingValidation[emptyRow.Id].Name[0]}
+                                      </div>
+                                    )}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap min-w-[180px] relative">
+                                    <Input
+                                        type="email"
+                                        value={emptyRow.email || ""}
+                                        onChange={e => setEmptyRows(prev => prev.map(row => row.Id === emptyRow.Id ? {
+                                            ...row,
+                                            email: e.target.value
+                                        } : row))}
+                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "email", e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === "Enter") {
+                                                handleEmptyRowUpdate(emptyRow.Id, "email", e.target.value);
+                                            }
+                                        }}
+                                        placeholder="Enter email address..."
+                                        className={`border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 font-medium placeholder-gray-400 ${
+                                          pendingValidation[emptyRow.Id]?.email ? 'border-red-300 bg-red-50' : ''
+                                        }`} />
+                                    {pendingValidation[emptyRow.Id]?.email && (
+                                      <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10">
+                                        {pendingValidation[emptyRow.Id].email[0]}
                                       </div>
                                     )}
                                 </td>
@@ -1409,6 +1441,30 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                 {pendingValidation[lead.Id]?.Name && (
                                   <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10">
                                     {pendingValidation[lead.Id].Name[0]}
+                                  </div>
+                                )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap min-w-[180px] relative">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                      type="email"
+                                      value={getDisplayValue(lead, 'email')}
+                                      onChange={e => handleFieldChange(lead.Id, "email", e.target.value)}
+                                      onBlur={e => handleImmediateSave(lead.Id, "email", e.target.value)}
+                                      onKeyDown={e => handleKeyDown(e, lead.Id, "email", e.target.value)}
+                                      placeholder="Enter email..."
+                                      className={`border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 font-medium ${
+                                        pendingValidation[lead.Id]?.email ? 'border-red-300 bg-red-50' : ''
+                                      }`} />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.email && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                                {pendingValidation[lead.Id]?.email && (
+                                  <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10">
+                                    {pendingValidation[lead.Id].email[0]}
                                   </div>
                                 )}
                             </td>
@@ -1850,6 +1906,7 @@ const SearchableSelect = ({ value, onChange, options, placeholder = "Select...",
 const AddLeadModal = ({ onClose, onSubmit, categoryOptions, onCreateCategory }) => {
 const [formData, setFormData] = useState({
     Name: "",
+    email: "",
     website_url: "",
     team_size: "1-3",
     arr: "",
@@ -1917,7 +1974,7 @@ return (
           </button>
         </div>
 <div className="overflow-y-auto max-h-[70vh] flex-1">
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+<form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Product Name
@@ -1942,6 +1999,33 @@ return (
                   {formErrors.Name[0]}
                 </div>
               )}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <div className="relative">
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => {
+                    setFormData({...formData, email: e.target.value});
+                    // Clear errors when user starts typing
+                    if (formErrors.email) {
+                      setFormErrors(prev => ({...prev, email: undefined}));
+                    }
+                  }}
+                  onBlur={(e) => handleFieldValidation('email', e.target.value)}
+                  placeholder="contact@example.com"
+                  className={formErrors.email ? 'border-red-300 bg-red-50' : ''}
+                />
+                {formErrors.email && (
+                  <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
+                    {formErrors.email[0]}
+                  </div>
+                )}
+              </div>
             </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2135,6 +2219,7 @@ return (
 const EditLeadModal = ({ lead, onClose, onSubmit, categoryOptions, onCreateCategory }) => {
 const [formData, setFormData] = useState({
     Name: lead.Name || '',
+    email: lead.email || '',
     website_url: lead.website_url || '',
     team_size: lead.team_size || '1-3',
     arr: lead.arr ? (lead.arr / 1000000).toString() : '',
@@ -2232,6 +2317,36 @@ onBlur={(e) => handleFieldValidation('Name', e.target.value)}
 {formErrors.Name && (
                       <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
                         {formErrors.Name[0]}
+                      </div>
+                    )}
+                </div>
+            </div>
+            
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <div className="relative">
+                <Input
+                        type="email"
+                        value={formData.email}
+                        onChange={e => {
+                          setFormData({
+                              ...formData,
+                              email: e.target.value
+                          });
+                          // Clear errors when user starts typing
+                          if (formErrors.email) {
+                            setFormErrors(prev => ({...prev, email: undefined}));
+                          }
+                        }}
+                        onBlur={(e) => handleFieldValidation('email', e.target.value)}
+                        className={formErrors.email ? 'border-red-300 bg-red-50' : ''}
+                        placeholder="contact@example.com"
+                    />
+                    {formErrors.email && (
+                      <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
+                        {formErrors.email[0]}
                       </div>
                     )}
                 </div>
