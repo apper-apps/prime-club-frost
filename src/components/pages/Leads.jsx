@@ -142,13 +142,14 @@ const handleStatusChange = async (leadId, newStatus) => {
         )
       );
       
-      // Define status-to-stage mapping for common statuses
+// Define status-to-stage mapping for common statuses
       const statusToStageMap = {
         "Connected": "Connected",
         "Locked": "Locked", 
-"Meeting Booked": "Meeting Booked",
+        "Meeting Booked": "Meeting Booked",
         "Meeting Done": "Meeting Done",
         "Negotiation": "Negotiation",
+        "Closed": "Closed",
         "Lost": "Lost"
       };
       
@@ -157,19 +158,19 @@ const handleStatusChange = async (leadId, newStatus) => {
       
       if (targetStage) {
         try {
-          // Get current deals to check if one exists for this lead
+// Get current deals to check if one exists for this lead
           const currentDeals = await getDeals();
-          const existingDeal = currentDeals.find(deal => deal.leadId === leadId.toString());
+          const existingDeal = currentDeals.find(deal => deal.lead_id === leadId.toString());
           
           if (existingDeal) {
-// Update existing deal to the new stage
+            // Update existing deal to the new stage
             await updateDeal(existingDeal.Id, { stage: targetStage });
           } else {
             // Create new deal in the target stage
             const dealData = {
               name: `${updatedLead.website_url} Deal`,
               leadName: updatedLead.website_url.replace(/^https?:\/\//, '').replace(/\/$/, ''),
-              leadId: leadId.toString(),
+              lead_id: leadId.toString(),
               value: updatedLead.arr || 0,
               stage: targetStage,
               assignedRep: "Unassigned",
@@ -177,9 +178,8 @@ const handleStatusChange = async (leadId, newStatus) => {
               endMonth: new Date().getMonth() + 3,
               edition: updatedLead.edition || "Select Edition"
             };
-await createDeal(dealData);
+            await createDeal(dealData);
           }
-          
           // Refresh dashboard metrics to reflect the updated deals count
           try {
             if (window.refreshDashboard) {
