@@ -1,7 +1,7 @@
 import React from "react";
 import { getDeals } from "@/services/api/dealsService";
 import { getSalesReps } from "@/services/api/salesRepService";
-import { getLeads, getPendingFollowUps } from "@/services/api/leadsService";
+import { getLeads } from "@/services/api/leadsService";
 import dashboardData from "@/services/mockData/dashboard.json";
 import Error from "@/components/ui/Error";
 // Dashboard Service - Centralized data management for dashboard components
