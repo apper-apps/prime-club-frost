@@ -1918,10 +1918,10 @@ return (
         </div>
 <div className="overflow-y-auto max-h-[70vh] flex-1">
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-<div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product Name
-            </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Product Name
+              </label>
               <Input
                 type="text"
                 value={formData.Name}
@@ -1931,20 +1931,18 @@ return (
                   if (formErrors.Name) {
                     setFormErrors(prev => ({...prev, Name: undefined}));
                   }
-}}
+                }}
                 onBlur={(e) => handleFieldValidation('Name', e.target.value)}
                 placeholder="Product Name"
                 className={formErrors.Name ? 'border-red-300 bg-red-50' : ''}
-required
+                required
               />
-{formErrors.Name && (
+              {formErrors.Name && (
                 <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
                   {formErrors.Name[0]}
                 </div>
               )}
             </div>
-          </div>
-          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Website URL
