@@ -1338,19 +1338,16 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                         </select>
 </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap min-w-[120px]">
-                                    <Input
-                                        type="text"
+<td className="px-6 py-4 whitespace-nowrap min-w-[120px]">
+                                    <select
                                         value={emptyRow.edition || "Select Edition"}
-                                        onChange={e => handleEmptyRowUpdateDebounced(emptyRow.Id, "edition", e.target.value)}
-                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "edition", e.target.value)}
-                                        onKeyDown={e => {
-                                            if (e.key === "Enter") {
-                                                handleEmptyRowUpdate(emptyRow.Id, "edition", e.target.value);
-                                            }
-                                        }}
-                                        placeholder="Select Edition..."
-                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
+                                        onChange={e => handleEmptyRowUpdate(emptyRow.Id, "edition", e.target.value)}
+                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full text-gray-500 text-sm">
+                                        <option value="Select Edition">Select Edition</option>
+                                        <option value="Black Edition">Black Edition</option>
+                                        <option value="Collector's Edition">Collector's Edition</option>
+                                        <option value="Limited Edition">Limited Edition</option>
+                                    </select>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap min-w-[130px]">
 <Input
@@ -1576,16 +1573,21 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                   )}
 </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap min-w-[120px] relative">
+<td className="px-6 py-4 whitespace-nowrap min-w-[120px] relative">
                                 <div className="flex items-center gap-2">
-                                  <Input
-                                      type="text"
+                                  <select
                                       value={getDisplayValue(lead, 'edition')}
-                                      onChange={e => handleFieldChange(lead.Id, "edition", e.target.value)}
-                                      onBlur={e => handleImmediateSave(lead.Id, "edition", e.target.value)}
+                                      onChange={e => {
+                                        handleFieldChange(lead.Id, "edition", e.target.value);
+                                        handleImmediateSave(lead.Id, "edition", e.target.value);
+                                      }}
                                       onKeyDown={e => handleKeyDown(e, lead.Id, "edition", e.target.value)}
-                                      placeholder="Select Edition..."
-                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full text-sm" />
+                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full text-sm">
+                                      <option value="Select Edition">Select Edition</option>
+                                      <option value="Black Edition">Black Edition</option>
+                                      <option value="Collector's Edition">Collector's Edition</option>
+                                      <option value="Limited Edition">Limited Edition</option>
+                                  </select>
                                   {savingStates[lead.Id] && editingStates[lead.Id]?.edition && (
                                     <div className="animate-spin">
                                       <ApperIcon name="Loader2" size={14} className="text-gray-400" />
