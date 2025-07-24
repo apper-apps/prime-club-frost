@@ -311,9 +311,9 @@ useEffect(() => {
                   if (rep) handleSalesRepChange(rep);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
+>
                 {salesReps.map(rep => (
-                  <option key={rep.Id} value={rep.Id}>{rep.name}</option>
+                  <option key={rep.Id} value={rep.Id}>{rep.Name}</option>
                 ))}
               </select>
             </div>
