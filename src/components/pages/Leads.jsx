@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import ApperIcon from "@/components/ApperIcon";
-import Empty from "@/components/ui/Empty";
-import Error from "@/components/ui/Error";
-import Loading from "@/components/ui/Loading";
-import Hotlist from "@/components/pages/Hotlist";
-import SearchBar from "@/components/molecules/SearchBar";
-import Card from "@/components/atoms/Card";
-import Input from "@/components/atoms/Input";
-import Badge from "@/components/atoms/Badge";
-import Button from "@/components/atoms/Button";
 import { createDeal, getDeals, updateDeal } from "@/services/api/dealsService";
 import { createLead, deleteLead, getLeads, updateLead } from "@/services/api/leadsService";
+import ApperIcon from "@/components/ApperIcon";
+import Hotlist from "@/components/pages/Hotlist";
+import Badge from "@/components/atoms/Badge";
+import Card from "@/components/atoms/Card";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import SearchBar from "@/components/molecules/SearchBar";
+import Error from "@/components/ui/Error";
+import Empty from "@/components/ui/Empty";
+import Loading from "@/components/ui/Loading";
 // Validation functions - moved to module level for accessibility by modal components
 const validateField = (field, value, leadData = {}) => {
   const errors = [];
@@ -63,6 +64,7 @@ const validateRow = (leadData) => {
 };
 
 const Leads = () => {
+  const { user } = useSelector((state) => state.user);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -81,7 +83,6 @@ const Leads = () => {
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [topScrollbarRef, setTopScrollbarRef] = useState(null);
   const [tableScrollbarRef, setTableScrollbarRef] = useState(null);
-
 // Auto-save system state
   const [editingStates, setEditingStates] = useState({}); // Track which cells are being edited
   const [optimisticData, setOptimisticData] = useState({}); // Store optimistic updates
@@ -245,9 +246,16 @@ const handleDelete = async (leadId) => {
     }
   };
 
-  const handleAddLead = async (leadData) => {
+const handleAddLead = async (leadData) => {
     try {
-      const newLead = await createLead(leadData);
+      const enrichedLeadData = {
+        ...leadData,
+        added_by: user?.userId || null,
+        added_by_name: user?.firstName && user?.lastName 
+          ? `${user.firstName} ${user.lastName}` 
+          : user?.name || 'Unknown User'
+      };
+      const newLead = await createLead(enrichedLeadData);
       setData(prevData => [newLead, ...prevData]);
       setShowAddForm(false);
       toast.success("Lead added successfully!");
@@ -574,6 +582,7 @@ const handleFieldUpdate = async (leadId, field, value) => {
 const addEmptyRow = () => {
     const newEmptyRow = {
       Id: nextTempId,
+      Name: "",
       website_url: "",
       team_size: "1-3", 
       arr: 0,
@@ -639,11 +648,15 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
   if (field === 'website_url' && value.trim()) {
     const emptyRow = emptyRows.find(row => row.Id === tempId);
     if (emptyRow) {
+      // Extract company name from website URL for the Name field
+      const companyName = value.replace(/^https?:\/\//, '').replace(/^www\./, '').split('.')[0];
+      const cleanCompanyName = companyName.charAt(0).toUpperCase() + companyName.slice(1);
+      
       // Create temporary lead data for validation
       const tempLeadData = {
         ...emptyRow,
-        website_url: value,
-        Name: value // Set Name to website_url for validation purposes
+        Name: emptyRow.Name || cleanCompanyName,
+        website_url: value
       };
       
       // Validate required fields before attempting creation
@@ -685,13 +698,18 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
         if (urls.length === 1) {
           // Single URL - existing behavior
           const leadData = {
+            Name: emptyRow.Name || cleanCompanyName,
             website_url: urls[0],
             team_size: emptyRow.team_size,
             arr: emptyRow.arr,
             category: emptyRow.category,
             linkedin_url: emptyRow.linkedin_url || `https://linkedin.com/company/${urls[0].replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
             status: emptyRow.status,
-            funding_type: emptyRow.funding_type
+            funding_type: emptyRow.funding_type,
+            added_by: user?.userId || null,
+            added_by_name: user?.firstName && user?.lastName 
+              ? `${user.firstName} ${user.lastName}` 
+              : user?.name || 'Unknown User'
           };
           
           const newLead = await createLead(leadData);
@@ -705,17 +723,24 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
           // Multiple URLs - create separate leads for each
           const successfulLeads = [];
           const failedUrls = [];
-          
-          for (const url of urls) {
+for (const url of urls) {
             try {
+              const urlCompanyName = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('.')[0];
+              const cleanUrlCompanyName = urlCompanyName.charAt(0).toUpperCase() + urlCompanyName.slice(1);
+              
               const leadData = {
+                Name: emptyRow.Name || cleanUrlCompanyName,
                 website_url: url,
                 team_size: emptyRow.team_size,
                 arr: emptyRow.arr,
                 category: emptyRow.category,
                 linkedin_url: emptyRow.linkedin_url || `https://linkedin.com/company/${url.replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
                 status: emptyRow.status,
-                funding_type: emptyRow.funding_type
+                funding_type: emptyRow.funding_type,
+                added_by: user?.userId || null,
+                added_by_name: user?.firstName && user?.lastName 
+                  ? `${user.firstName} ${user.lastName}` 
+                  : user?.name || 'Unknown User'
               };
               
               const newLead = await createLead(leadData);
@@ -724,7 +749,6 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
               failedUrls.push({ url, error: err.message });
             }
           }
-          
           // Update the data with all successful leads
           if (successfulLeads.length > 0) {
             setData(prevData => [...successfulLeads, ...prevData]);
@@ -1793,7 +1817,7 @@ const [formData, setFormData] = useState({
     website_url: "",
     team_size: "1-3",
     arr: "",
-    category: "",
+    category: "Accounting Software",
     linkedin_url: "",
     status: "Keep an Eye",
     funding_type: "Bootstrapped",
@@ -1839,8 +1863,9 @@ setFormErrors(allErrors);
       return;
     }
     
-    onSubmit({
+onSubmit({
       ...formData,
+      Name: formData.Name || formData.website_url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('.')[0],
       arr: Number(formData.arr)
     });
   };
@@ -1856,10 +1881,10 @@ return (
         </div>
 <div className="overflow-y-auto max-h-[70vh] flex-1">
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div>
+<div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Website URL
-</label>
+              Company Name
+            </label>
             <div className="relative">
               <Input
                 type="text"
@@ -2054,7 +2079,7 @@ const [formData, setFormData] = useState({
     Name: lead.Name || '',
     website_url: lead.website_url || '',
     team_size: lead.team_size || '1-3',
-    arr: lead.arr?.toString() ?? '',
+    arr: lead.arr ? (lead.arr / 1000000).toString() : '',
     category: lead.category || 'Accounting Software',
     linkedin_url: lead.linkedin_url || '',
     status: lead.status || 'Keep an Eye',
@@ -2106,9 +2131,9 @@ if (hasErrors) {
       return;
     }
     
-    onSubmit(lead.Id, {
+onSubmit(lead.Id, {
       ...formData,
-      arr: Number(formData.arr)
+      arr: Number(formData.arr) * 1000000
     });
   };
 
@@ -2124,8 +2149,8 @@ if (hasErrors) {
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Website URL
-                                </label>
+<label className="block text-sm font-medium text-gray-700 mb-1">Company Name
+                </label>
 <div className="relative">
                     <Input
                         type="text"
