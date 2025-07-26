@@ -1,21 +1,31 @@
 import { toast } from "react-toastify";
+import React from "react";
+import { getPendingFollowUps } from "@/services/api/dashboardService";
+import Error from "@/components/ui/Error";
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+// Initialize ApperClient with Project ID and Public Key
+const { ApperClient } = window.ApperSDK;
+const apperClient = new ApperClient({
+  apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+  apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+});
 
-export const getLeads = async () => {
-  await delay(400);
-  
+// Table name from the provided Tables & Fields JSON
+const TABLE_NAME = 'lead';
+
+// Get all leads
+export const getAllLeads = async () => {
   try {
-    const { ApperClient } = window.ApperSDK;
-    const apperClient = new ApperClient({
-      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-    });
-    
-const params = {
-fields: [
+    // Define fields based on the provided Tables & Fields JSON for "lead" table
+    const params = {
+      fields: [
         { field: { Name: "Name" } },
-        { field: { Name: "email" } },
+        { field: { Name: "Tags" } },
+        { field: { Name: "Owner" } },
+        { field: { Name: "CreatedOn" } },
+        { field: { Name: "CreatedBy" } },
+        { field: { Name: "ModifiedOn" } },
+        { field: { Name: "ModifiedBy" } },
         { field: { Name: "website_url" } },
         { field: { Name: "team_size" } },
         { field: { Name: "arr" } },
@@ -24,52 +34,266 @@ fields: [
         { field: { Name: "status" } },
         { field: { Name: "funding_type" } },
         { field: { Name: "edition" } },
-        { field: { Name: "follow_up_date" } },
-        { field: { Name: "added_by" } },
         { field: { Name: "added_by_name" } },
         { field: { Name: "created_at" } },
-        { field: { Name: "Tags" } },
-        { field: { Name: "Owner" } },
+        { field: { Name: "follow_up_date" } },
+        { field: { Name: "added_by" } },
         { field: { Name: "product_name" } }
-      ],
-      orderBy: [
-        {
-          fieldName: "created_at",
-          sorttype: "DESC"
-        }
       ]
     };
     
-    const response = await apperClient.fetchRecords('lead', params);
+    const response = await apperClient.fetchRecords(TABLE_NAME, params);
     
-    if (!response.success) {
-      console.error(response.message);
-      toast.error(response.message);
+    if (!response || !response.data || response.data.length === 0) {
       return [];
     }
     
-    return response.data || [];
+    return response.data;
   } catch (error) {
-    console.error("Error fetching leads:", error);
-    toast.error("Failed to load leads");
+    if (error?.response?.data?.message) {
+      console.error("Error fetching leads:", error?.response?.data?.message);
+    } else {
+      console.error(error.message);
+    }
     return [];
   }
 };
 
-export const getLeadById = async (id) => {
-  await delay(200);
-  
+// Get lead by ID
+export const getLeadById = async (recordId) => {
   try {
-    const { ApperClient } = window.ApperSDK;
-    const apperClient = new ApperClient({
-      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    // Extract field names from the Tables & Fields JSON for the "lead" table
+    const tableFields = [
+      { field: { Name: "Name" } },
+      { field: { Name: "Tags" } },
+      { field: { Name: "Owner" } },
+      { field: { Name: "CreatedOn" } },
+      { field: { Name: "CreatedBy" } },
+      { field: { Name: "ModifiedOn" } },
+      { field: { Name: "ModifiedBy" } },
+      { field: { Name: "website_url" } },
+      { field: { Name: "team_size" } },
+      { field: { Name: "arr" } },
+      { field: { Name: "category" } },
+      { field: { Name: "linkedin_url" } },
+      { field: { Name: "status" } },
+      { field: { Name: "funding_type" } },
+      { field: { Name: "edition" } },
+      { field: { Name: "added_by_name" } },
+      { field: { Name: "created_at" } },
+      { field: { Name: "follow_up_date" } },
+      { field: { Name: "added_by" } },
+      { field: { Name: "product_name" } }
+    ];
+    
+    const params = {
+      fields: tableFields
+    };
+    
+    const response = await apperClient.getRecordById(TABLE_NAME, recordId, params);
+    
+    if (!response || !response.data) {
+      return null;
+    }
+    
+    return response.data;
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      console.error(`Error fetching record with ID ${recordId}:`, error?.response?.data?.message);
+    } else {
+      console.error(error.message);
+    }
+    return null;
+  }
+};
+
+// Create new lead
+export const createLead = async (leadData) => {
+  try {
+    // Only include fields with visibility: "Updateable" based on Tables & Fields JSON
+    const updateableData = {
+      Name: leadData.Name,
+      Tags: leadData.Tags,
+      Owner: leadData.Owner ? parseInt(leadData.Owner?.Id || leadData.Owner) : undefined,
+      website_url: leadData.website_url,
+      team_size: leadData.team_size,
+      arr: leadData.arr ? parseFloat(leadData.arr) : undefined,
+      category: leadData.category,
+      linkedin_url: leadData.linkedin_url,
+      status: leadData.status,
+      funding_type: leadData.funding_type,
+      edition: leadData.edition,
+      added_by_name: leadData.added_by_name,
+      created_at: leadData.created_at,
+      follow_up_date: leadData.follow_up_date,
+      added_by: leadData.added_by ? parseInt(leadData.added_by?.Id || leadData.added_by) : undefined,
+      product_name: leadData.product_name
+    };
+    
+    // Remove undefined fields
+    Object.keys(updateableData).forEach(key => {
+      if (updateableData[key] === undefined) {
+        delete updateableData[key];
+      }
     });
     
-const params = {
+    const params = {
+      records: [updateableData]
+    };
+    
+    const response = await apperClient.createRecord(TABLE_NAME, params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      toast.error(response.message);
+      return null;
+    }
+    
+    if (response.results) {
+      const successfulRecords = response.results.filter(result => result.success);
+      const failedRecords = response.results.filter(result => !result.success);
+      
+      if (failedRecords.length > 0) {
+        console.error(`Failed to create leads ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+        
+        failedRecords.forEach(record => {
+          record.errors?.forEach(error => {
+            toast.error(`${error.fieldLabel}: ${error.message}`);
+          });
+          if (record.message) toast.error(record.message);
+        });
+      }
+      
+      return successfulRecords.length > 0 ? successfulRecords[0].data : null;
+    }
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      console.error("Error creating records in Lead service:", error?.response?.data?.message);
+    } else {
+      console.error(error.message);
+    }
+    return null;
+  }
+};
+
+// Update lead
+export const updateLead = async (id, leadData) => {
+  try {
+    // Only include fields with visibility: "Updateable" based on Tables & Fields JSON
+    const updateableData = {
+      Id: parseInt(id),
+      Name: leadData.Name,
+      Tags: leadData.Tags,
+      Owner: leadData.Owner ? parseInt(leadData.Owner?.Id || leadData.Owner) : undefined,
+      website_url: leadData.website_url,
+      team_size: leadData.team_size,
+      arr: leadData.arr ? parseFloat(leadData.arr) : undefined,
+      category: leadData.category,
+      linkedin_url: leadData.linkedin_url,
+      status: leadData.status,
+      funding_type: leadData.funding_type,
+      edition: leadData.edition,
+      added_by_name: leadData.added_by_name,
+      created_at: leadData.created_at,
+      follow_up_date: leadData.follow_up_date,
+      added_by: leadData.added_by ? parseInt(leadData.added_by?.Id || leadData.added_by) : undefined,
+      product_name: leadData.product_name
+    };
+    
+    // Remove undefined fields (except Id)
+    Object.keys(updateableData).forEach(key => {
+      if (key !== 'Id' && updateableData[key] === undefined) {
+        delete updateableData[key];
+      }
+    });
+    
+    const params = {
+      records: [updateableData]
+    };
+    
+    const response = await apperClient.updateRecord(TABLE_NAME, params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      toast.error(response.message);
+      return null;
+    }
+    
+    if (response.results) {
+      const successfulUpdates = response.results.filter(result => result.success);
+      const failedUpdates = response.results.filter(result => !result.success);
+      
+      if (failedUpdates.length > 0) {
+        console.error(`Failed to update leads ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
+        
+        failedUpdates.forEach(record => {
+          record.errors?.forEach(error => {
+            toast.error(`${error.fieldLabel}: ${error.message}`);
+          });
+          if (record.message) toast.error(record.message);
+        });
+      }
+      
+      return successfulUpdates.length > 0 ? successfulUpdates[0].data : null;
+    }
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      console.error("Error updating records in Lead service:", error?.response?.data?.message);
+    } else {
+      console.error(error.message);
+    }
+    return null;
+  }
+};
+
+// Delete lead
+export const deleteLead = async (recordIds) => {
+  try {
+    const params = {
+      RecordIds: Array.isArray(recordIds) ? recordIds : [recordIds]
+    };
+    
+    const response = await apperClient.deleteRecord(TABLE_NAME, params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      toast.error(response.message);
+      return false;
+    }
+    
+    if (response.results) {
+      const successfulDeletions = response.results.filter(result => result.success);
+      const failedDeletions = response.results.filter(result => !result.success);
+      
+      if (failedDeletions.length > 0) {
+        console.error(`Failed to delete Leads ${failedDeletions.length} records:${JSON.stringify(failedDeletions)}`);
+        
+        failedDeletions.forEach(record => {
+          if (record.message) toast.error(record.message);
+        });
+      }
+      
+      return successfulDeletions.length === params.RecordIds.length;
+    }
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      console.error("Error deleting records:", error?.response?.data?.message);
+    } else {
+      console.error(error.message);
+    }
+    return false;
+  }
+};
+
+// Utility function for adding delays
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Get lead by ID (simplified duplicate removal)
+export const getLeadByIdSimple = async (id) => {
+  try {
+    const params = {
       fields: [
         { field: { Name: "Name" } },
-        { field: { Name: "email" } },
         { field: { Name: "website_url" } },
         { field: { Name: "team_size" } },
         { field: { Name: "arr" } },
@@ -104,16 +328,11 @@ const params = {
   }
 };
 
-export const createLead = async (leadData) => {
+// Enhanced create lead function (replacing duplicate)
+export const createLeadEnhanced = async (leadData) => {
   await delay(300);
   
   try {
-    const { ApperClient } = window.ApperSDK;
-    const apperClient = new ApperClient({
-      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-    });
-    
     // Valid team size values from database schema
     const validTeamSizes = ["1-3", "11-50", "201-500", "500+", "1001+"];
     const providedTeamSize = leadData.team_size || leadData.teamSize || "1-3";
@@ -126,8 +345,8 @@ export const createLead = async (leadData) => {
       console.warn(`Invalid team_size value provided: "${providedTeamSize}". Using default "1-3". Valid values are:`, validTeamSizes);
     }
     
-const params = {
-records: [
+    const params = {
+      records: [
         {
           Name: leadData.name || leadData.Name,
           email: leadData.email,
@@ -186,28 +405,24 @@ records: [
   }
 };
 
-export const updateLead = async (id, updates) => {
+// Enhanced update lead function (replacing duplicate)
+export const updateLeadEnhanced = async (id, updates) => {
   await delay(300);
   
   try {
     // Validate ID is a valid integer
-    if (!id || typeof id !== 'number' || id <= 0 || !Number.isInteger(id)) {
+    const numericId = parseInt(id);
+    if (!numericId || numericId <= 0) {
       throw new Error(`Invalid lead ID: ${id}. Must be a positive integer.`);
     }
 
-    const { ApperClient } = window.ApperSDK;
-    const apperClient = new ApperClient({
-      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-    });
-    
-// Valid team size values from database schema
+    // Valid team size values from database schema
     const validTeamSizes = ["1-3", "11-50", "201-500", "500+", "1001+"];
     
     // Create record payload with only defined values
-    const recordData = { Id: id };
+    const recordData = { Id: numericId };
     
-// Only include fields that have actual values (not undefined/null)
+    // Only include fields that have actual values (not undefined/null)
     if (updates.name !== undefined || updates.Name !== undefined) {
       recordData.Name = updates.name || updates.Name;
     }
@@ -251,21 +466,23 @@ export const updateLead = async (id, updates) => {
     if (updates.added_by !== undefined || updates.addedBy !== undefined) {
       recordData.added_by = updates.added_by || updates.addedBy;
     }
-if (updates.added_by_name !== undefined || updates.addedByName !== undefined) {
+    if (updates.added_by_name !== undefined || updates.addedByName !== undefined) {
       recordData.added_by_name = updates.added_by_name || updates.addedByName;
     }
     if (updates.tags !== undefined || updates.Tags !== undefined) {
       recordData.Tags = updates.tags || updates.Tags;
     }
-if (updates.owner !== undefined || updates.Owner !== undefined) {
+    if (updates.owner !== undefined || updates.Owner !== undefined) {
       recordData.Owner = updates.owner || updates.Owner;
     }
     if (updates.product_name !== undefined) {
       recordData.product_name = updates.product_name;
     }
+    
     const params = {
       records: [recordData]
     };
+    
     const response = await apperClient.updateRecord('lead', params);
     
     if (!response.success) {
@@ -303,16 +520,11 @@ if (updates.owner !== undefined || updates.Owner !== undefined) {
   }
 };
 
-export const deleteLead = async (id) => {
+// Enhanced delete lead function (replacing duplicate)
+export const deleteLeadEnhanced = async (id) => {
   await delay(300);
   
   try {
-    const { ApperClient } = window.ApperSDK;
-    const apperClient = new ApperClient({
-      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-    });
-    
     const params = {
       RecordIds: [id]
     };
