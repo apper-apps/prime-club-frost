@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import ApperIcon from "@/components/ApperIcon";
-import Badge from "@/components/atoms/Badge";
-import Button from "@/components/atoms/Button";
-import Card from "@/components/atoms/Card";
-import Input from "@/components/atoms/Input";
-import Empty from "@/components/ui/Empty";
-import Error from "@/components/ui/Error";
-import Loading from "@/components/ui/Loading";
-import SearchBar from "@/components/molecules/SearchBar";
 import { deleteLead, getAllLeads, updateLead } from "@/services/api/leadsService";
 import { createDeal, getDeals, updateDeal } from "@/services/api/dealsService";
+import ApperIcon from "@/components/ApperIcon";
+import SearchBar from "@/components/molecules/SearchBar";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Empty from "@/components/ui/Empty";
+import Badge from "@/components/atoms/Badge";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
 
 const Hotlist = () => {
   const [leads, setLeads] = useState([]);
@@ -246,12 +246,13 @@ leadId: updatedLead.Id,
   const fundingTypeOptions = ['Bootstrapped', 'Pre-seed', 'Y Combinator', 'Seed', 'Series A', 'Series B', 'Series C'];
 
   const filteredAndSortedData = React.useMemo(() => {
-    let filtered = leads.filter(lead => {
+let filtered = leads.filter(lead => {
       const matchesSearch = !searchQuery || 
-        lead.websiteUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.addedByName.toLowerCase().includes(searchQuery.toLowerCase());
-      
+        (lead.Name && lead.Name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (lead.product_name && lead.product_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (lead.website_url && lead.website_url.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (lead.category && lead.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (lead.addedByName && lead.addedByName.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesStatus = !statusFilter || lead.status === statusFilter;
       const matchesFunding = !fundingFilter || lead.fundingType === fundingFilter;
       
@@ -391,6 +392,15 @@ leadId: updatedLead.Id,
                       className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                   </th>
+<th className="text-left p-4">
+                    <button
+                      onClick={() => handleSort('Name')}
+                      className="flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
+                    >
+                      Name
+                      <ApperIcon name="ArrowUpDown" size={14} />
+                    </button>
+                  </th>
                   <th className="text-left p-4">
                     <button
                       onClick={() => handleSort('websiteUrl')}
@@ -453,8 +463,7 @@ leadId: updatedLead.Id,
                       Added By
                       <ApperIcon name="ArrowUpDown" size={14} />
                     </button>
-                  </th>
-                  <th className="text-left p-4">
+<th className="text-left p-4">
                     <button
                       onClick={() => handleSort('createdAt')}
                       className="flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
@@ -463,7 +472,16 @@ leadId: updatedLead.Id,
                       <ApperIcon name="ArrowUpDown" size={14} />
                     </button>
                   </th>
-                  <th className="text-left p-4">Actions</th>
+                  <th className="text-left p-4">
+                    <button
+                      onClick={() => handleSort('product_name')}
+                      className="flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
+                    >
+                      Product Name
+                      <ApperIcon name="ArrowUpDown" size={14} />
+                    </button>
+                  </th>
+<th className="text-left p-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -476,11 +494,14 @@ leadId: updatedLead.Id,
                         onChange={() => toggleLeadSelection(lead.Id)}
                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
+</td>
+                    <td className="p-4">
+                      <span className="font-medium text-gray-900">{lead.Name || 'No Name'}</span>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
-<ApperIcon name="Globe" size={16} className="text-gray-400" />
+                          <ApperIcon name="Globe" size={16} className="text-gray-400" />
                           <span className="font-medium text-gray-900">
                             {lead.website_url ? lead.website_url.replace('https://', '').replace('www.', '') : 'No URL'}
                           </span>
@@ -546,9 +567,12 @@ leadId: updatedLead.Id,
                       <span className="text-sm text-gray-700">{lead.addedByName}</span>
                     </td>
                     <td className="p-4">
-                      <span className="text-sm text-gray-700">
+<span className="text-sm text-gray-700">
                         {new Date(lead.createdAt).toLocaleDateString()}
                       </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-gray-700">{lead.product_name || 'No Product'}</span>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
