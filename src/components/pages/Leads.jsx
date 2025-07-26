@@ -1130,7 +1130,7 @@ const handleSort = (field) => {
               ref={setTableScrollbarRef}
               className="overflow-x-auto"
             >
-                <table className="w-full min-w-[1300px]">
+<table className="w-full min-w-[1400px]">
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[50px]">
@@ -1140,6 +1140,9 @@ const handleSort = (field) => {
                                     onChange={toggleSelectAll}
                                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                 />
+                            </th>
+<th
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Product Name
                             </th>
 <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
@@ -1156,9 +1159,6 @@ const handleSort = (field) => {
                                     className="flex items-center gap-1 hover:text-gray-700">Email
                                                             <ApperIcon name="ArrowUpDown" size={12} />
                                 </button>
-                            </th>
-                            <th
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Product Name
                             </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
@@ -1221,6 +1221,23 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 opacity-50"
                                     />
                                 </td>
+<td className="px-6 py-4 whitespace-nowrap min-w-[150px]">
+                                    <Input
+                                        type="text"
+                                        value={emptyRow.product_name || ""}
+                                        onChange={e => setEmptyRows(prev => prev.map(row => row.Id === emptyRow.Id ? {
+                                            ...row,
+                                            product_name: e.target.value
+                                        } : row))}
+                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "product_name", e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === "Enter") {
+                                                handleEmptyRowUpdate(emptyRow.Id, "product_name", e.target.value);
+                                            }
+                                        }}
+                                        placeholder="Enter product name..."
+                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
+                                </td>
 <td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
                                     <Input
                                         type="text"
@@ -1268,23 +1285,6 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                         {pendingValidation[emptyRow.Id].email[0]}
                                       </div>
                                     )}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap min-w-[150px]">
-                                    <Input
-                                        type="text"
-                                        value={emptyRow.product_name || ""}
-                                        onChange={e => setEmptyRows(prev => prev.map(row => row.Id === emptyRow.Id ? {
-                                            ...row,
-                                            product_name: e.target.value
-                                        } : row))}
-                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "product_name", e.target.value)}
-                                        onKeyDown={e => {
-                                            if (e.key === "Enter") {
-                                                handleEmptyRowUpdate(emptyRow.Id, "product_name", e.target.value);
-                                            }
-                                        }}
-                                        placeholder="Enter product name..."
-                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap min-w-[200px] relative">
                                     <Input
@@ -1448,6 +1448,23 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                 <div className="flex items-center gap-2">
                                   <Input
                                       type="text"
+                                      value={getDisplayValue(lead, 'product_name')}
+                                      onChange={e => handleFieldChange(lead.Id, "product_name", e.target.value)}
+                                      onBlur={e => handleImmediateSave(lead.Id, "product_name", e.target.value)}
+                                      onKeyDown={e => handleKeyDown(e, lead.Id, "product_name", e.target.value)}
+                                      placeholder="Enter product name..."
+                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.product_name && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                            </td>
+<td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                      type="text"
                                       value={getDisplayValue(lead, 'Name')}
                                       onChange={e => handleFieldChange(lead.Id, "Name", e.target.value)}
                                       onBlur={e => handleImmediateSave(lead.Id, "Name", e.target.value)}
@@ -1490,23 +1507,6 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                     {pendingValidation[lead.Id].email[0]}
                                   </div>
                                 )}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                      type="text"
-                                      value={getDisplayValue(lead, 'product_name')}
-                                      onChange={e => handleFieldChange(lead.Id, "product_name", e.target.value)}
-                                      onBlur={e => handleImmediateSave(lead.Id, "product_name", e.target.value)}
-                                      onKeyDown={e => handleKeyDown(e, lead.Id, "product_name", e.target.value)}
-                                      placeholder="Enter product name..."
-                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
-                                  {savingStates[lead.Id] && editingStates[lead.Id]?.product_name && (
-                                    <div className="animate-spin">
-                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
-                                    </div>
-                                  )}
-                                </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap min-w-[200px] relative">
                                 <div className="flex items-center gap-2">

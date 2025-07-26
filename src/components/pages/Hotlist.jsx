@@ -394,6 +394,15 @@ let filtered = leads.filter(lead => {
                   </th>
 <th className="text-left p-4">
                     <button
+                      onClick={() => handleSort('product_name')}
+                      className="flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
+                    >
+                      Product Name
+                      <ApperIcon name="ArrowUpDown" size={14} />
+                    </button>
+                  </th>
+<th className="text-left p-4">
+                    <button
                       onClick={() => handleSort('Name')}
                       className="flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
                     >
@@ -473,15 +482,6 @@ onClick={() => handleSort('addedByName')}
                       <ApperIcon name="ArrowUpDown" size={14} />
                     </button>
                   </th>
-                  <th className="text-left p-4">
-                    <button
-                      onClick={() => handleSort('product_name')}
-                      className="flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
-                    >
-                      Product Name
-                      <ApperIcon name="ArrowUpDown" size={14} />
-                    </button>
-                  </th>
 <th className="text-left p-4">Actions</th>
                 </tr>
               </thead>
@@ -496,6 +496,9 @@ onClick={() => handleSort('addedByName')}
                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
 </td>
+<td className="p-4">
+                      <span className="text-sm text-gray-700">{lead.product_name || 'No Product'}</span>
+                    </td>
                     <td className="p-4">
                       <span className="font-medium text-gray-900">{lead.Name || 'No Name'}</span>
                     </td>
@@ -571,9 +574,6 @@ onClick={() => handleSort('addedByName')}
 <span className="text-sm text-gray-700">
                         {new Date(lead.createdAt).toLocaleDateString()}
                       </span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-sm text-gray-700">{lead.product_name || 'No Product'}</span>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
