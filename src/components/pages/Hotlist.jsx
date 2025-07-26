@@ -10,7 +10,7 @@ import Empty from "@/components/ui/Empty";
 import Error from "@/components/ui/Error";
 import Loading from "@/components/ui/Loading";
 import SearchBar from "@/components/molecules/SearchBar";
-import { deleteLead, getLeads, updateLead } from "@/services/api/leadsService";
+import { deleteLead, getAllLeads, updateLead } from "@/services/api/leadsService";
 import { createDeal, getDeals, updateDeal } from "@/services/api/dealsService";
 
 const Hotlist = () => {
@@ -35,7 +35,7 @@ const loadLeads = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getLeads();
+      const response = await getAllLeads();
       
       // Filter only hotlist leads - response is already an array
       const hotlistLeads = response.filter(lead => lead.status === 'Hotlist');
