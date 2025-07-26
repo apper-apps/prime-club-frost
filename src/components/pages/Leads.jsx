@@ -958,7 +958,8 @@ const filteredAndSortedData = data
         (lead.Name && lead.Name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         lead.website_url.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lead.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.team_size.toLowerCase().includes(searchTerm.toLowerCase());
+        lead.team_size.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (lead.product_name && lead.product_name.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesStatus = statusFilter === "all" || lead.status === statusFilter;
       const matchesFunding = fundingFilter === "all" || lead.funding_type === fundingFilter;
@@ -1149,13 +1150,16 @@ const handleSort = (field) => {
                                                             <ApperIcon name="ArrowUpDown" size={12} />
                                 </button>
                             </th>
-                            <th
+<th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">
                                 <button
                                     onClick={() => handleSort("email")}
                                     className="flex items-center gap-1 hover:text-gray-700">Email
                                                             <ApperIcon name="ArrowUpDown" size={12} />
                                 </button>
+                            </th>
+                            <th
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Product Name
                             </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
@@ -1183,9 +1187,6 @@ const handleSort = (field) => {
                             </th>
 <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Category
-                            </th>
-                            <th
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Product Name
                             </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">LinkedIn
@@ -1245,7 +1246,7 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                       </div>
                                     )}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap min-w-[180px] relative">
+<td className="px-6 py-4 whitespace-nowrap min-w-[180px] relative">
                                     <Input
                                         type="email"
                                         value={emptyRow.email || ""}
@@ -1268,6 +1269,23 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                         {pendingValidation[emptyRow.Id].email[0]}
                                       </div>
                                     )}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap min-w-[150px]">
+                                    <Input
+                                        type="text"
+                                        value={emptyRow.product_name || ""}
+                                        onChange={e => setEmptyRows(prev => prev.map(row => row.Id === emptyRow.Id ? {
+                                            ...row,
+                                            product_name: e.target.value
+                                        } : row))}
+                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "product_name", e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === "Enter") {
+                                                handleEmptyRowUpdate(emptyRow.Id, "product_name", e.target.value);
+                                            }
+                                        }}
+                                        placeholder="Enter product name..."
+                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap min-w-[200px] relative">
                                     <Input
@@ -1331,23 +1349,6 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                         className="text-gray-500"
                                         onCreateCategory={handleCreateCategory}
                                     />
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap min-w-[150px]">
-                                    <Input
-                                        type="text"
-                                        value={emptyRow.product_name || ""}
-                                        onChange={e => setEmptyRows(prev => prev.map(row => row.Id === emptyRow.Id ? {
-                                            ...row,
-                                            product_name: e.target.value
-                                        } : row))}
-                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "product_name", e.target.value)}
-                                        onKeyDown={e => {
-                                            if (e.key === "Enter") {
-                                                handleEmptyRowUpdate(emptyRow.Id, "product_name", e.target.value);
-                                            }
-                                        }}
-                                        placeholder="Enter product name..."
-                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap min-w-[180px]">
                                     <Input
@@ -1467,7 +1468,7 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                   </div>
                                 )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap min-w-[180px] relative">
+<td className="px-6 py-4 whitespace-nowrap min-w-[180px] relative">
                                 <div className="flex items-center gap-2">
                                   <Input
                                       type="email"
@@ -1490,6 +1491,23 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                     {pendingValidation[lead.Id].email[0]}
                                   </div>
                                 )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                      type="text"
+                                      value={getDisplayValue(lead, 'product_name')}
+                                      onChange={e => handleFieldChange(lead.Id, "product_name", e.target.value)}
+                                      onBlur={e => handleImmediateSave(lead.Id, "product_name", e.target.value)}
+                                      onKeyDown={e => handleKeyDown(e, lead.Id, "product_name", e.target.value)}
+                                      placeholder="Enter product name..."
+                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.product_name && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap min-w-[200px] relative">
                                 <div className="flex items-center gap-2">
@@ -1567,23 +1585,6 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                       onCreateCategory={handleCreateCategory}
                                   />
                                   {savingStates[lead.Id] && editingStates[lead.Id]?.category && (
-                                    <div className="animate-spin">
-                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
-                                    </div>
-                                  )}
-                                </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                      type="text"
-                                      value={getDisplayValue(lead, 'product_name')}
-                                      onChange={e => handleFieldChange(lead.Id, "product_name", e.target.value)}
-                                      onBlur={e => handleImmediateSave(lead.Id, "product_name", e.target.value)}
-                                      onKeyDown={e => handleKeyDown(e, lead.Id, "product_name", e.target.value)}
-                                      placeholder="Enter product name..."
-                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
-                                  {savingStates[lead.Id] && editingStates[lead.Id]?.product_name && (
                                     <div className="animate-spin">
                                       <ApperIcon name="Loader2" size={14} className="text-gray-400" />
                                     </div>
