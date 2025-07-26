@@ -1142,7 +1142,7 @@ const handleSort = (field) => {
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
                                 <button
                                     onClick={() => handleSort("Name")}
-                                    className="flex items-center gap-1 hover:text-gray-700">Product Name
+                                    className="flex items-center gap-1 hover:text-gray-700">Name
                                                             <ApperIcon name="ArrowUpDown" size={12} />
                                 </button>
                             </th>
@@ -1229,7 +1229,7 @@ emptyRow => <tr key={`empty-${emptyRow.Id}`} className="hover:bg-gray-50 empty-r
                                                 handleEmptyRowUpdate(emptyRow.Id, "Name", e.target.value);
 }
                                         }}
-                                        placeholder="Enter product name..."
+                                        placeholder="Enter name..."
                                         className={`border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 font-medium placeholder-gray-400 ${
                                           pendingValidation[emptyRow.Id]?.Name ? 'border-red-300 bg-red-50' : ''
                                         }`} />
@@ -1975,9 +1975,9 @@ return (
         </div>
 <div className="overflow-y-auto max-h-[70vh] flex-1">
 <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div>
+<div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Product Name
+                Name
               </label>
               <Input
                 type="text"
@@ -1990,7 +1990,7 @@ return (
                   }
                 }}
                 onBlur={(e) => handleFieldValidation('Name', e.target.value)}
-                placeholder="Product Name"
+                placeholder="Name"
                 className={formErrors.Name ? 'border-red-300 bg-red-50' : ''}
                 required
               />
@@ -2293,7 +2293,7 @@ return (
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3 sm:space-y-4">
 <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                Product Name
+                Name
               </label>
               <div className="relative">
                 <Input
@@ -2311,7 +2311,7 @@ return (
                         }}
 onBlur={(e) => handleFieldValidation('Name', e.target.value)}
                         className={formErrors.Name ? 'border-red-300 bg-red-50' : ''}
-                        placeholder="Product Name"
+                        placeholder="Name"
                         required 
                     />
 {formErrors.Name && (
