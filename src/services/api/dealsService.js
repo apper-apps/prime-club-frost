@@ -14,11 +14,11 @@ export const getDeals = async (year = null) => {
     
     const params = {
       fields: [
-        { field: { Name: "Name" } },
+{ field: { Name: "Name" } },
         { field: { Name: "lead_name" } },
         { field: { Name: "lead_id" } },
         { field: { Name: "value" } },
-        { field: { Name: "stage" } },
+        { field: { Name: "status" } },
         { field: { Name: "assigned_rep" } },
         { field: { Name: "edition" } },
         { field: { Name: "start_month" } },
@@ -73,11 +73,11 @@ export const getDealById = async (id) => {
     
     const params = {
       fields: [
-        { field: { Name: "Name" } },
+{ field: { Name: "Name" } },
         { field: { Name: "lead_name" } },
         { field: { Name: "lead_id" } },
         { field: { Name: "value" } },
-        { field: { Name: "stage" } },
+        { field: { Name: "status" } },
         { field: { Name: "assigned_rep" } },
         { field: { Name: "edition" } },
         { field: { Name: "start_month" } },
@@ -116,12 +116,12 @@ export const createDeal = async (dealData) => {
     
     const params = {
       records: [
-        {
+{
           Name: dealData.name || dealData.Name,
           lead_name: dealData.lead_name || dealData.leadName,
           lead_id: dealData.lead_id || dealData.leadId,
           value: dealData.value || 0,
-          stage: dealData.stage || "Connected",
+          status: dealData.status || dealData.stage || "Connected",
           assigned_rep: dealData.assigned_rep || dealData.assignedRep,
           edition: dealData.edition,
           start_month: dealData.start_month || dealData.startMonth,
@@ -182,12 +182,12 @@ export const updateDeal = async (id, updates) => {
     const params = {
       records: [
         {
-          Id: id,
+Id: id,
           Name: updates.name || updates.Name,
           lead_name: updates.lead_name || updates.leadName,
           lead_id: updates.lead_id || updates.leadId,
           value: updates.value,
-          stage: updates.stage,
+          status: updates.status || updates.stage,
           assigned_rep: updates.assigned_rep || updates.assignedRep,
           edition: updates.edition,
           start_month: updates.start_month || updates.startMonth,

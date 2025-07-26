@@ -166,14 +166,14 @@ const handleStatusChange = async (leadId, newStatus) => {
           if (existingDeal) {
             // Update existing deal to the new stage
             await updateDeal(existingDeal.Id, { stage: targetStage });
-          } else {
+} else {
             // Create new deal in the target stage
             const dealData = {
-              name: `${updatedLead.website_url} Deal`,
-              leadName: updatedLead.website_url.replace(/^https?:\/\//, '').replace(/\/$/, ''),
+              name: updatedLead.Name || `${updatedLead.website_url} Deal`,
+              product_name: updatedLead.Name || updatedLead.website_url?.replace(/^https?:\/\//, '').replace(/\/$/, ''),
               lead_id: leadId.toString(),
               value: updatedLead.arr || 0,
-              stage: targetStage,
+              status: targetStage,
               assignedRep: "Unassigned",
               startMonth: new Date().getMonth() + 1,
               endMonth: new Date().getMonth() + 3,
