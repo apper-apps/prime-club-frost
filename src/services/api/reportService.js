@@ -1,5 +1,3 @@
-import { getAllLeads } from "./leadsService";
-import React from "react";
 import { getAllLeads, getFreshLeadsOnly } from "@/services/api/leadsService";
 import { getSalesReps } from "@/services/api/salesRepService";
 
@@ -16,7 +14,6 @@ export const getWebsiteUrlActivity = async (filters = {}) => {
   await delay(300);
   
 try {
-    const { getAllLeads } = await import("@/services/api/leadsService");
     let filteredData = await getAllLeads();
     // Filter by date range
     if (filters.startDate || filters.endDate) {
@@ -131,8 +128,7 @@ export const getQuickDateFilters = () => {
 export const getSalesRepsForFilter = async () => {
   await delay(200);
   
-  try {
-    const { getSalesReps } = await import("@/services/api/salesRepService");
+try {
     return await getSalesReps();
   } catch (error) {
     console.error("Error fetching sales reps for filter:", error);
@@ -162,9 +158,6 @@ export const getDailyWebsiteUrls = async (salesRepId, date) => {
   await delay(300);
   
 try {
-    const { getAllLeads } = await import("@/services/api/leadsService");
-    const { getSalesReps } = await import("@/services/api/salesRepService");
-    
     const targetDate = new Date(date);
     let filteredData = await getAllLeads();
     
