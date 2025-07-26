@@ -1,4 +1,7 @@
-import { getFreshLeadsOnly } from "./leadsService";
+import { getAllLeads } from "./leadsService";
+import React from "react";
+import { getAllLeads, getFreshLeadsOnly } from "@/services/api/leadsService";
+import { getSalesReps } from "@/services/api/salesRepService";
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -12,10 +15,9 @@ const cleanWebsiteUrl = (url) => {
 export const getWebsiteUrlActivity = async (filters = {}) => {
   await delay(300);
   
-  try {
-    const { getLeads } = await import("@/services/api/leadsService");
-    let filteredData = await getLeads();
-    
+try {
+    const { getAllLeads } = await import("@/services/api/leadsService");
+    let filteredData = await getAllLeads();
     // Filter by date range
     if (filters.startDate || filters.endDate) {
       filteredData = filteredData.filter(lead => {
@@ -159,12 +161,12 @@ const getCategorySummary = (data) => {
 export const getDailyWebsiteUrls = async (salesRepId, date) => {
   await delay(300);
   
-  try {
-    const { getLeads } = await import("@/services/api/leadsService");
+try {
+    const { getAllLeads } = await import("@/services/api/leadsService");
     const { getSalesReps } = await import("@/services/api/salesRepService");
     
     const targetDate = new Date(date);
-    let filteredData = await getLeads();
+    let filteredData = await getAllLeads();
     
     // Filter by sales rep
     if (salesRepId) {
