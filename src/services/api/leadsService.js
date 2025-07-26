@@ -13,7 +13,7 @@ export const getLeads = async () => {
     });
     
 const params = {
-      fields: [
+fields: [
         { field: { Name: "Name" } },
         { field: { Name: "email" } },
         { field: { Name: "website_url" } },
@@ -29,7 +29,8 @@ const params = {
         { field: { Name: "added_by_name" } },
         { field: { Name: "created_at" } },
         { field: { Name: "Tags" } },
-        { field: { Name: "Owner" } }
+        { field: { Name: "Owner" } },
+        { field: { Name: "product_name" } }
       ],
       orderBy: [
         {
@@ -82,7 +83,8 @@ const params = {
         { field: { Name: "added_by_name" } },
         { field: { Name: "created_at" } },
         { field: { Name: "Tags" } },
-        { field: { Name: "Owner" } }
+        { field: { Name: "Owner" } },
+        { field: { Name: "product_name" } }
       ]
     };
     
@@ -125,7 +127,7 @@ export const createLead = async (leadData) => {
     }
     
 const params = {
-      records: [
+records: [
         {
           Name: leadData.name || leadData.Name,
           email: leadData.email,
@@ -141,7 +143,8 @@ const params = {
           added_by: leadData.added_by || leadData.addedBy,
           added_by_name: leadData.added_by_name || leadData.addedByName,
           Tags: leadData.tags || leadData.Tags,
-          Owner: leadData.owner || leadData.Owner
+          Owner: leadData.owner || leadData.Owner,
+          product_name: leadData.product_name || ""
         }
       ]
     };
@@ -254,10 +257,12 @@ if (updates.added_by_name !== undefined || updates.addedByName !== undefined) {
     if (updates.tags !== undefined || updates.Tags !== undefined) {
       recordData.Tags = updates.tags || updates.Tags;
     }
-    if (updates.owner !== undefined || updates.Owner !== undefined) {
+if (updates.owner !== undefined || updates.Owner !== undefined) {
       recordData.Owner = updates.owner || updates.Owner;
     }
-    
+    if (updates.product_name !== undefined) {
+      recordData.product_name = updates.product_name;
+    }
     const params = {
       records: [recordData]
     };

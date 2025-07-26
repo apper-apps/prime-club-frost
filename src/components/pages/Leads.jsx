@@ -2,18 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { createDeal, getDeals, updateDeal } from "@/services/api/dealsService";
 import { createLead, deleteLead, getLeads, updateLead } from "@/services/api/leadsService";
+import { createDeal, getDeals, updateDeal } from "@/services/api/dealsService";
 import ApperIcon from "@/components/ApperIcon";
-import Hotlist from "@/components/pages/Hotlist";
-import Badge from "@/components/atoms/Badge";
-import Card from "@/components/atoms/Card";
-import Input from "@/components/atoms/Input";
-import Button from "@/components/atoms/Button";
 import SearchBar from "@/components/molecules/SearchBar";
+import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import Loading from "@/components/ui/Loading";
+import Hotlist from "@/components/pages/Hotlist";
+import Badge from "@/components/atoms/Badge";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
 // Validation functions - moved to module level for accessibility by modal components
 const validateField = (field, value, leadData = {}) => {
   const errors = [];
@@ -579,8 +579,7 @@ const handleFieldUpdate = async (leadId, field, value) => {
   };
 
 // Add empty row for new data entry
-const addEmptyRow = () => {
-    const newEmptyRow = {
+const newEmptyRow = {
       Id: nextTempId,
       Name: "",
       website_url: "",
@@ -591,6 +590,7 @@ const addEmptyRow = () => {
       status: "Keep an Eye",
       funding_type: "Bootstrapped",
       follow_up_date: "",
+      product_name: "",
       isEmptyRow: true
     };
     setEmptyRows(prev => [...prev, newEmptyRow]);
@@ -695,7 +695,7 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
           return;
         }
         
-        if (urls.length === 1) {
+if (urls.length === 1) {
           // Single URL - existing behavior
           const leadData = {
             Name: emptyRow.Name || cleanCompanyName,
@@ -706,6 +706,7 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
             linkedin_url: emptyRow.linkedin_url || `https://linkedin.com/company/${urls[0].replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
             status: emptyRow.status,
             funding_type: emptyRow.funding_type,
+            product_name: emptyRow.product_name,
             added_by: user?.userId || null,
             added_by_name: user?.firstName && user?.lastName 
               ? `${user.firstName} ${user.lastName}` 
@@ -720,10 +721,10 @@ const handleEmptyRowUpdate = async (tempId, field, value) => {
           
           toast.success("Lead created successfully!");
         } else {
-          // Multiple URLs - create separate leads for each
+// Multiple URLs - create separate leads for each
           const successfulLeads = [];
           const failedUrls = [];
-for (const url of urls) {
+          for (const url of urls) {
             try {
               const urlCompanyName = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('.')[0];
               const cleanUrlCompanyName = urlCompanyName.charAt(0).toUpperCase() + urlCompanyName.slice(1);
@@ -737,6 +738,7 @@ for (const url of urls) {
                 linkedin_url: emptyRow.linkedin_url || `https://linkedin.com/company/${url.replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
                 status: emptyRow.status,
                 funding_type: emptyRow.funding_type,
+                product_name: emptyRow.product_name,
                 added_by: user?.userId || null,
                 added_by_name: user?.firstName && user?.lastName 
                   ? `${user.firstName} ${user.lastName}` 
@@ -1178,30 +1180,33 @@ const handleSort = (field) => {
                                                             <ApperIcon name="ArrowUpDown" size={12} />
                                 </button>
                             </th>
-                            <th
+<th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Category
-</th>
+                            </th>
+                            <th
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Product Name
+                            </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">LinkedIn
-                                                    </th>
+                            </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Status
                             </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">Funding Type
-</th>
+                            </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Edition
                             </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[130px]">Follow-up Date
-</th>
+                            </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px] pr-4">Added By
-                                                    </th>
+                            </th>
                             <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px] sticky right-0 bg-gray-50 border-l border-gray-200">Actions
-                                                    </th>
+                            </th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -1324,10 +1329,27 @@ className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px]">
                                         placeholder="Select category..."
                                         className="text-gray-500"
                                         onCreateCategory={handleCreateCategory}
-/>
+                                    />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap min-w-[150px]">
+                                    <Input
+                                        type="text"
+                                        value={emptyRow.product_name || ""}
+                                        onChange={e => setEmptyRows(prev => prev.map(row => row.Id === emptyRow.Id ? {
+                                            ...row,
+                                            product_name: e.target.value
+                                        } : row))}
+                                        onBlur={e => handleEmptyRowUpdate(emptyRow.Id, "product_name", e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === "Enter") {
+                                                handleEmptyRowUpdate(emptyRow.Id, "product_name", e.target.value);
+                                            }
+                                        }}
+                                        placeholder="Enter product name..."
+                                        className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap min-w-[180px]">
-                                <Input
+                                    <Input
                                         type="url"
                                         value={emptyRow.linkedin_url}
                                         onChange={e => handleEmptyRowUpdateDebounced(emptyRow.Id, "linkedin_url", e.target.value)}
@@ -1531,7 +1553,7 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                   )}
                                 </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px] relative">
+<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[150px] relative">
                                 <div className="flex items-center gap-2">
                                   <SearchableSelect
                                       value={getDisplayValue(lead, 'category')}
@@ -1548,7 +1570,24 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                       <ApperIcon name="Loader2" size={14} className="text-gray-400" />
                                     </div>
                                   )}
-</div>
+                                </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                      type="text"
+                                      value={getDisplayValue(lead, 'product_name')}
+                                      onChange={e => handleFieldChange(lead.Id, "product_name", e.target.value)}
+                                      onBlur={e => handleImmediateSave(lead.Id, "product_name", e.target.value)}
+                                      onKeyDown={e => handleKeyDown(e, lead.Id, "product_name", e.target.value)}
+                                      placeholder="Enter product name..."
+                                      className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:border-gray-300 w-full placeholder-gray-400 text-sm" />
+                                  {savingStates[lead.Id] && editingStates[lead.Id]?.product_name && (
+                                    <div className="animate-spin">
+                                      <ApperIcon name="Loader2" size={14} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap min-w-[180px] relative">
                                 <div className="flex items-center gap-2">
@@ -1575,7 +1614,7 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                           <ApperIcon name="Linkedin" size={16} />
                                       </a>
                                   )}
-</div>
+                                </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap min-w-[150px] relative">
                                 <div className="flex items-center gap-2">
@@ -1905,17 +1944,18 @@ const SearchableSelect = ({ value, onChange, options, placeholder = "Select...",
 
 const AddLeadModal = ({ onClose, onSubmit, categoryOptions, onCreateCategory }) => {
 const [formData, setFormData] = useState({
-    Name: "",
-    email: "",
-    website_url: "",
-    team_size: "1-3",
-    arr: "",
-    category: "Accounting Software",
-    linkedin_url: "",
-    status: "Keep an Eye",
-    funding_type: "Bootstrapped",
-    edition: "Select Edition",
-    follow_up_date: ""
+        Name: "",
+        email: "",
+        website_url: "",
+        team_size: "1-3",
+        arr: "",
+        category: "Accounting Software",
+        linkedin_url: "",
+        status: "Keep an Eye",
+        funding_type: "Bootstrapped",
+        edition: "Select Edition",
+        follow_up_date: "",
+        product_name: ""
   });
   
   const [formErrors, setFormErrors] = useState({});
@@ -1958,10 +1998,10 @@ setFormErrors(allErrors);
     }
     
 onSubmit({
-      ...formData,
-      Name: formData.Name || formData.website_url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('.')[0],
-      arr: Number(formData.arr)
-    });
+          ...formData,
+          Name: formData.Name || formData.website_url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('.')[0],
+          arr: Number(formData.arr)
+        });
   };
 
 return (
@@ -2055,9 +2095,20 @@ return (
                 </div>
               )}
             </div>
+</div>
           </div>
           
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Product Name
+            </label>
+            <Input
+              type="text"
+              value={formData.product_name}
+              onChange={(e) => setFormData({...formData, product_name: e.target.value})}
+              placeholder="Enter product name..."
+            />
+          </div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Team Size
 </label>
@@ -2218,22 +2269,23 @@ return (
 
 const EditLeadModal = ({ lead, onClose, onSubmit, categoryOptions, onCreateCategory }) => {
 const [formData, setFormData] = useState({
-    Name: lead.Name || '',
-    email: lead.email || '',
-    website_url: lead.website_url || '',
-    team_size: lead.team_size || '1-3',
-    arr: lead.arr ? (lead.arr / 1000000).toString() : '',
-    category: lead.category || 'Accounting Software',
-    linkedin_url: lead.linkedin_url || '',
-    status: lead.status || 'Keep an Eye',
-    funding_type: lead.funding_type || 'Bootstrapped',
-    edition: lead.edition || 'Select Edition',
-    follow_up_date: lead.follow_up_date || '',
-    added_by: lead.added_by || null,
-    added_by_name: lead.added_by_name || '',
-    Tags: lead.Tags || '',
-    Owner: lead.Owner || null
-  });
+        Name: lead.Name || '',
+        email: lead.email || '',
+        website_url: lead.website_url || '',
+        team_size: lead.team_size || '1-3',
+        arr: lead.arr ? (lead.arr / 1000000).toString() : '',
+        category: lead.category || 'Accounting Software',
+        linkedin_url: lead.linkedin_url || '',
+        status: lead.status || 'Keep an Eye',
+        funding_type: lead.funding_type || 'Bootstrapped',
+        edition: lead.edition || 'Select Edition',
+        follow_up_date: lead.follow_up_date || '',
+        product_name: lead.product_name || '',
+        added_by: lead.added_by || null,
+        added_by_name: lead.added_by_name || '',
+        Tags: lead.Tags || '',
+        Owner: lead.Owner || null
+      });
   
   const [formErrors, setFormErrors] = useState({});
 
@@ -2381,25 +2433,41 @@ onBlur={(e) => handleFieldValidation('Name', e.target.value)}
                         {formErrors.website_url[0]}
                       </div>
                     )}
-                </div>
+</div>
             </div>
             
-<div>
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                Product Name
+              </label>
+              <Input
+                type="text"
+                value={formData.product_name}
+                onChange={e => setFormData({
+                  ...formData,
+                  product_name: e.target.value
+                })}
+                placeholder="Enter product name..."
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            
+            <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Team Size
               </label>
               <select
                 value={formData.team_size}
-onChange={e => setFormData({
+                onChange={e => setFormData({
                   ...formData,
                   team_size: e.target.value
                 })}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
-<option value="1-3">1-3</option>
+                    <option value="1-3">1-3</option>
                     <option value="11-50">11-50</option>
                     <option value="201-500">201-500</option>
                     <option value="500+">500+</option>
-<option value="1001+">1001+</option>
+                    <option value="1001+">1001+</option>
                 </select>
             </div>
             

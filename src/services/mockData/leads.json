@@ -1,19 +1,20 @@
 [
-  {
-    "Id": 1,
-    "Name": "Notion",
-    "websiteUrl": "https://notion.so",
-    "teamSize": "11-50",
-    "arr": 150000,
-    "category": "Note Taking App",
-    "linkedinUrl": "https://linkedin.com/company/notion",
-    "status": "Keep an Eye",
-    "fundingType": "Series A",
-    "edition": "Black Edition",
-    "addedBy": 1,
-    "addedByName": "Sarah Johnson",
-    "createdAt": "2024-12-19T10:30:00Z"
-  },
+    {
+      "Id": 1,
+      "Name": "Notion",
+      "websiteUrl": "https://notion.so",
+      "teamSize": "11-50",
+      "arr": 150000,
+      "category": "Note Taking App",
+      "linkedinUrl": "https://linkedin.com/company/notion",
+      "status": "Keep an Eye",
+      "fundingType": "Series A",
+      "edition": "Black Edition",
+      "addedBy": 1,
+      "addedByName": "Sarah Johnson",
+      "createdAt": "2024-12-19T10:30:00Z",
+      "product_name": "Productivity Suite"
+    },
 {
     "Id": 2,
     "Name": "Canva",
