@@ -114,14 +114,14 @@ export const createDeal = async (dealData) => {
       apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
     });
     
-    const params = {
+const params = {
       records: [
-{
+        {
           Name: dealData.name || dealData.Name,
           lead_name: dealData.lead_name || dealData.leadName,
           lead_id: dealData.lead_id || dealData.leadId,
           value: dealData.value || 0,
-          status: dealData.status || dealData.stage || "Connected",
+          stage: dealData.stage || dealData.status || "Connected",
           assigned_rep: dealData.assigned_rep || dealData.assignedRep,
           edition: dealData.edition,
           start_month: dealData.start_month || dealData.startMonth,
