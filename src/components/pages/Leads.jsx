@@ -2098,8 +2098,7 @@ return (
             </div>
 </div>
           </div>
-          
-          <div>
+<div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Product Name
             </label>
@@ -2110,15 +2109,17 @@ return (
               placeholder="Enter product name..."
             />
           </div>
+          
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Team Size
-</label>
-<select
+            </label>
+            <select
               value={formData.team_size}
               onChange={(e) => setFormData({...formData, team_size: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
-<option value="1-3">1-3</option>
+              <option value="1-3">1-3</option>
               <option value="11-50">11-50</option>
               <option value="201-500">201-500</option>
               <option value="500+">500+</option>
