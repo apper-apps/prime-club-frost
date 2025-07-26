@@ -2094,11 +2094,11 @@ return (
                 <div className="absolute top-full left-0 text-xs text-red-600 bg-white border border-red-200 rounded px-2 py-1 shadow-sm z-10 mt-1">
                   {formErrors.website_url[0]}
                 </div>
-              )}
+)}
             </div>
-</div>
           </div>
-<div>
+          
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Product Name
             </label>
