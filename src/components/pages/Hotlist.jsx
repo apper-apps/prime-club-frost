@@ -457,13 +457,14 @@ let filtered = leads.filter(lead => {
                   </th>
                   <th className="text-left p-4">
                     <button
-                      onClick={() => handleSort('addedByName')}
+onClick={() => handleSort('addedByName')}
                       className="flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
                     >
                       Added By
                       <ApperIcon name="ArrowUpDown" size={14} />
                     </button>
-<th className="text-left p-4">
+                  </th>
+                  <th className="text-left p-4">
                     <button
                       onClick={() => handleSort('createdAt')}
                       className="flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
