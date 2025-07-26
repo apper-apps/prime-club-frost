@@ -5,7 +5,7 @@ import Card from "@/components/atoms/Card";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
 import ApperIcon from "@/components/ApperIcon";
-import { getLeads } from "@/services/api/leadsService";
+import { getAllLeads } from "@/services/api/leadsService";
 const DealEditModal = ({ isOpen, onClose, deal, onSave, isCreateMode = false }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -74,12 +74,12 @@ const stages = [
     return cleaned.trim();
   };
 
-  useEffect(() => {
+useEffect(() => {
     const loadLeads = async () => {
       if (isCreateMode && isOpen) {
         setLoadingLeads(true);
         try {
-          const leadsData = await getLeads();
+          const leadsData = await getAllLeads();
           setLeads(leadsData);
         } catch (error) {
           console.error("Error loading leads:", error);
