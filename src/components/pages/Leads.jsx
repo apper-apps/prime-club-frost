@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { createLead, deleteLead, getLeads, updateLead } from "@/services/api/leadsService";
+import { createLead, deleteLead, getAllLeads, updateLead } from "@/services/api/leadsService";
 import { createDeal, getDeals, updateDeal } from "@/services/api/dealsService";
 import ApperIcon from "@/components/ApperIcon";
 import SearchBar from "@/components/molecules/SearchBar";
@@ -116,7 +116,7 @@ const loadLeads = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getLeads();
+      const response = await getAllLeads();
       
       // Service already returns proper array format with database field names
       setData(response || []);
@@ -126,7 +126,6 @@ const loadLeads = async () => {
       setLoading(false);
     }
   };
-
 const handleStatusChange = async (leadId, newStatus) => {
     try {
       // Validate leadId before calling service
