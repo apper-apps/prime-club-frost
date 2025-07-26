@@ -579,7 +579,8 @@ const handleFieldUpdate = async (leadId, field, value) => {
   };
 
 // Add empty row for new data entry
-const newEmptyRow = {
+  const addEmptyRow = () => {
+    const newEmptyRow = {
       Id: nextTempId,
       Name: "",
       website_url: "",
