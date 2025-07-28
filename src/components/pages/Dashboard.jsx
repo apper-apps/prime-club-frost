@@ -20,11 +20,11 @@ import {
   getDashboardMetrics, 
   getDetailedRecentActivity, 
   getLeadPerformanceChart, 
-  getPendingFollowUps as getDashboardPendingFollowUps, 
   getRevenueTrendsData, 
   getTeamPerformanceRankings, 
   getTodaysMeetings 
 } from "@/services/api/dashboardService";
+import { getPendingFollowUps as getDashboardPendingFollowUps } from "@/services/api/leadsService";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [metrics, setMetrics] = useState([]);
