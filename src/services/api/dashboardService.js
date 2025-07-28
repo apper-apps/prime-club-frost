@@ -406,6 +406,45 @@ export const getDetailedRecentActivity = async () => {
     }));
   } catch (error) {
     console.error("Error getting detailed recent activity:", error);
+return [];
+  }
+};
+
+// Get today's meetings
+export const getTodaysMeetings = async () => {
+  await delay(300);
+  try {
+    // Mock meetings data for today
+    const todaysMeetings = [
+      {
+        id: 1,
+        title: "Product Demo - SaaS Platform",
+        client: "TechCorp Solutions", 
+        time: "9:00 AM"
+      },
+      {
+        id: 2,
+        title: "Discovery Call - E-commerce",
+        client: "RetailMax Inc",
+        time: "11:30 AM"
+      },
+      {
+        id: 3,
+        title: "Proposal Review",
+        client: "DataFlow Systems",
+        time: "2:00 PM"
+      },
+      {
+        id: 4,
+        title: "Follow-up Call",
+        client: "CloudVision Ltd",
+        time: "4:30 PM"
+      }
+    ];
+    
+    return todaysMeetings;
+  } catch (error) {
+    console.error('Error fetching today\'s meetings:', error);
     return [];
   }
 };
