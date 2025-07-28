@@ -1812,44 +1812,7 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
 </motion.div>
   );
 };
-// Pagination state
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-  const [currentPage, setCurrentPage] = useState(1);
-  
-  // Filter and sort data
-  const filteredAndSortedData = useMemo(() => {
-    let filtered = leads.filter(lead => {
-      const matchesSearch = !searchTerm || 
-        lead.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.website_url?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.category?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
-      const matchesFunding = fundingFilter === 'all' || lead.funding_type === fundingFilter;
-      const matchesCategory = categoryFilter === 'all' || lead.category === categoryFilter;
-      const matchesTeamSize = teamSizeFilter === 'all' || lead.team_size === teamSizeFilter;
-      
-      return matchesSearch && matchesStatus && matchesFunding && matchesCategory && matchesTeamSize;
-    });
-
-    // Apply sorting
-    if (sortConfig.key) {
-      filtered.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-        
-        if (aValue < bValue) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-
-    return filtered;
-  }, [leads, searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter, sortConfig]);
+// Note: Pagination state and filtering logic should be implemented inside the main Leads component function
   
   const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
