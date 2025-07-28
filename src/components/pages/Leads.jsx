@@ -1004,7 +1004,6 @@ const handleSort = (field) => {
       addEmptyRow();
     }
   }, [loading, emptyRows.length]);
-
   if (loading) return <Loading />;
   if (error) return <Error message={error} onRetry={loadLeads} />;
 // Filter and sort data
