@@ -221,34 +221,126 @@ export const getLeadPerformanceChart = async () => {
       apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
     });
     
-    // Get leads and deals count by month (mock implementation for now)
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    // Calculate date range for last 30 days
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 29); // 30 days total including today
     
-    // This would be replaced with actual time-based aggregation queries
-    const leadsData = [12, 19, 15, 27, 22, 35];
-    const dealsData = [3, 5, 4, 8, 6, 12];
+    // Fetch leads from the database for the last 30 days
+    const params = {
+      fields: [
+        { field: { Name: "Id" } },
+        { field: { Name: "created_at" } }
+      ],
+      where: [
+        {
+          FieldName: "created_at",
+          Operator: "GreaterThanOrEqualTo",
+          Values: [startDate.toISOString().split('T')[0]]
+        },
+        {
+          FieldName: "created_at",
+          Operator: "LessThanOrEqualTo", 
+          Values: [endDate.toISOString().split('T')[0]]
+        }
+      ],
+      orderBy: [
+        {
+          fieldName: "created_at",
+          sorttype: "ASC"
+        }
+      ]
+    };
+    
+    const response = await apperClient.fetchRecords('lead', params);
+    
+    if (!response.success) {
+      console.error("Failed to fetch leads for chart:", response.message);
+      // Return fallback data
+      const fallbackDates = [];
+      const fallbackData = [];
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        fallbackDates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        fallbackData.push(0);
+      }
+      
+      return {
+        series: [{
+          name: 'Leads',
+          data: fallbackData
+        }],
+        categories: fallbackDates
+      };
+    }
+    
+    const leads = response.data || [];
+    
+    // Create a map to count leads per day
+    const leadsByDate = new Map();
+    const categories = [];
+    
+    // Initialize all dates in the range with 0 counts
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toISOString().split('T')[0];
+      const displayDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      
+      leadsByDate.set(dateKey, 0);
+      categories.push(displayDate);
+    }
+    
+    // Count actual leads by creation date
+    leads.forEach(lead => {
+      if (lead.created_at) {
+        // Handle both DateTime and Date formats
+        let leadDate;
+        if (lead.created_at.includes('T')) {
+          // DateTime format: "2024-01-15T10:30:00"
+          leadDate = lead.created_at.split('T')[0];
+        } else {
+          // Date format: "2024-01-15"  
+          leadDate = lead.created_at;
+        }
+        
+        if (leadsByDate.has(leadDate)) {
+          leadsByDate.set(leadDate, leadsByDate.get(leadDate) + 1);
+        }
+      }
+    });
+    
+    // Convert to array for chart
+    const leadsData = Array.from(leadsByDate.values());
     
     return {
       series: [{
         name: 'Leads',
         data: leadsData
-      }, {
-        name: 'Deals',
-        data: dealsData
       }],
-      categories: months
+      categories: categories
     };
+    
   } catch (error) {
     console.error("Error getting lead performance chart:", error);
+    
+    // Return fallback data with proper date range
+    const fallbackDates = [];
+    const fallbackData = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      fallbackDates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      fallbackData.push(0);
+    }
+    
     return {
       series: [{
         name: 'Leads',
-        data: [0, 0, 0, 0, 0, 0]
-      }, {
-        name: 'Deals',
-        data: [0, 0, 0, 0, 0, 0]
+        data: fallbackData
       }],
-      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+      categories: fallbackDates
     };
   }
 };
