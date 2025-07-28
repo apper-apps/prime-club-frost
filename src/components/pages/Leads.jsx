@@ -1812,25 +1812,49 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
 </motion.div>
   );
 };
-{/* Pagination state and computed values should be added earlier in the component */}
-  {/* Add these useState hooks near other state declarations: */}
-  {/* const [itemsPerPage, setItemsPerPage] = useState(20); */}
-  {/* const [currentPage, setCurrentPage] = useState(1); */}
+// Pagination state
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
   
-  {/* Add these useMemo hooks for computed values: */}
-  {/* const filteredAndSortedData = useMemo(() => { */}
-  {/*   // Filter and sort logic based on existing data processing */}
-  {/*   return leads.filter(lead => { */}
-  {/*     // Apply existing filtering logic */}
-  {/*   }).sort((a, b) => { */}
-  {/*     // Apply existing sorting logic */}
-  {/*   }); */}
-  {/* }, [leads, searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter, sortConfig]); */}
+  // Filter and sort data
+  const filteredAndSortedData = useMemo(() => {
+    let filtered = leads.filter(lead => {
+      const matchesSearch = !searchTerm || 
+        lead.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.website_url?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.category?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+      const matchesFunding = fundingFilter === 'all' || lead.funding_type === fundingFilter;
+      const matchesCategory = categoryFilter === 'all' || lead.category === categoryFilter;
+      const matchesTeamSize = teamSizeFilter === 'all' || lead.team_size === teamSizeFilter;
+      
+      return matchesSearch && matchesStatus && matchesFunding && matchesCategory && matchesTeamSize;
+    });
+
+    // Apply sorting
+    if (sortConfig.key) {
+      filtered.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [leads, searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter, sortConfig]);
   
-  {/* const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage); */}
-  {/* const startIndex = (currentPage - 1) * itemsPerPage; */}
-  {/* const endIndex = startIndex + itemsPerPage; */}
-{/* const paginatedData = filteredAndSortedData.slice(startIndex, endIndex); */}
+  const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = filteredAndSortedData.slice(startIndex, endIndex);
 {/* const paginatedData = filteredAndSortedData.slice(startIndex, endIndex); */}
 
 {/* Pagination Controls */}
@@ -1841,10 +1865,10 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">Show</span>
               <select
-                value={20}
+                value={itemsPerPage}
                 onChange={(e) => {
-                  // setItemsPerPage(Number(e.target.value));
-                  // setCurrentPage(1);
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
                 }}
                 className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
@@ -1859,9 +1883,9 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {
-                  // setCurrentPage(prev => Math.max(prev - 1, 1))
+                  setCurrentPage(prev => Math.max(prev - 1, 1))
                 }}
-                disabled={true}
+                disabled={currentPage === 1}
                 className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Previous page"
               >
@@ -1869,17 +1893,17 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
               </button>
 
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, Math.ceil((filteredAndSortedData?.length || 0) / 20)) }, (_, i) => {
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum = i + 1;
 
                   return (
                     <button
                       key={pageNum}
                       onClick={() => {
-                        // setCurrentPage(pageNum)
+                        setCurrentPage(pageNum)
                       }}
                       className={`px-3 py-1 rounded text-sm ${
-                        1 === pageNum
+                        currentPage === pageNum
                           ? 'bg-primary-600 text-white'
                           : 'hover:bg-gray-100 text-gray-700'
                       }`}
@@ -1892,9 +1916,9 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
 
               <button
                 onClick={() => {
-                  // setCurrentPage(prev => Math.min(prev + 1, totalPages))
+                  setCurrentPage(prev => Math.min(prev + 1, totalPages))
                 }}
-                disabled={true}
+                disabled={currentPage === totalPages}
                 className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Next page"
               >
@@ -1903,7 +1927,7 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
             </div>
 
             <div className="text-sm text-gray-600">
-              Showing 1-{Math.min(20, (filteredAndSortedData?.length || 0))} of {filteredAndSortedData?.length || 0} results
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedData.length)} of {filteredAndSortedData.length} results
             </div>
           </div>
         </Card>
