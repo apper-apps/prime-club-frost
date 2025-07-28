@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
@@ -931,54 +931,6 @@ const getStatusColor = (status) => {
     return colors[status] || "default";
   };
 
-const filteredAndSortedData = data
-    .filter(lead => {
-      const matchesSearch = !searchTerm || 
-        (lead.Name && lead.Name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        lead.website_url.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.team_size.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (lead.product_name && lead.product_name.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      const matchesStatus = statusFilter === "all" || lead.status === statusFilter;
-      const matchesFunding = fundingFilter === "all" || lead.funding_type === fundingFilter;
-      const matchesCategory = categoryFilter === "all" || lead.category === categoryFilter;
-      const matchesTeamSize = teamSizeFilter === "all" || lead.team_size === teamSizeFilter;
-      
-      return matchesSearch && matchesStatus && matchesFunding && matchesCategory && matchesTeamSize;
-    })
-    .sort((a, b) => {
-      let aValue = a[sortBy];
-      let bValue = b[sortBy];
-      
-      if (sortBy === "arr") {
-        aValue = Number(aValue);
-        bValue = Number(bValue);
-      }
-      
-      if (sortBy === "created_at") {
-        aValue = new Date(aValue);
-        bValue = new Date(bValue);
-      }
-      
-      if (sortBy === "website_url") {
-        // Sort website_url by creation date (newest first) instead of alphabetical
-        aValue = new Date(a.created_at);
-        bValue = new Date(b.created_at);
-      }
-      
-      if (sortOrder === "asc") {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedData = filteredAndSortedData.slice(startIndex, endIndex);
 const handleSort = (field) => {
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -999,6 +951,60 @@ const handleSort = (field) => {
 
   if (loading) return <Loading />;
   if (error) return <Error message={error} onRetry={loadLeads} />;
+// Filter and sort data
+  const filteredAndSortedData = useMemo(() => {
+    let filtered = data.filter(lead => {
+      const matchesSearch = !searchTerm || 
+        lead.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.website_url?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.team_size?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+      const matchesFunding = fundingFilter === 'all' || lead.funding_type === fundingFilter;
+      const matchesCategory = categoryFilter === 'all' || lead.category === categoryFilter;
+      const matchesTeamSize = teamSizeFilter === 'all' || lead.team_size === teamSizeFilter;
+      
+      return matchesSearch && matchesStatus && matchesFunding && matchesCategory && matchesTeamSize;
+    });
+// Apply sorting
+    if (sortBy) {
+filtered.sort((a, b) => {
+        let aValue = a[sortBy] || '';
+        let bValue = b[sortBy] || '';
+        
+        if (sortBy === "arr") {
+          aValue = Number(aValue);
+          bValue = Number(bValue);
+        }
+        
+        if (sortBy === "created_at") {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
+        }
+        
+        if (sortBy === "website_url") {
+          // Sort website_url by creation date (newest first) instead of alphabetical
+          aValue = new Date(a.created_at);
+          bValue = new Date(b.created_at);
+        }
+        
+        if (sortOrder === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+    }
+
+    return filtered;
+}, [data, searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter, sortBy, sortOrder]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = filteredAndSortedData.slice(startIndex, endIndex);
 
   return (
     <motion.div
