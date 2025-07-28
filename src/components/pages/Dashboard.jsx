@@ -262,8 +262,8 @@ useEffect(() => {
             <ApperIcon name="Users" size={20} className="text-primary-600" />
           </div>
           <div className="space-y-4">
-            {teamPerformance.slice(0, 5).map((rep, index) => (
-              <div key={rep.Id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+{teamPerformance.slice(0, 5).map((rep, index) => (
+              <div key={rep.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center">
                     <span className="text-white text-sm font-semibold">
@@ -272,12 +272,12 @@ useEffect(() => {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">{rep.name}</p>
-                    <p className="text-xs text-gray-500">{rep.weekLeads} leads this week</p>
+                    <p className="text-xs text-gray-500">{rep.leadsContacted} leads contacted</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-primary-600">{rep.totalLeads}</p>
-                  <p className="text-xs text-gray-500">total</p>
+                  <p className="font-semibold text-primary-600">${(rep.totalRevenue || 0).toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">revenue</p>
                 </div>
               </div>
             ))}

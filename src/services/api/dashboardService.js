@@ -72,19 +72,34 @@ const response = await apperClient.fetchRecords('sales_rep', params);
       return getDefaultMetrics();
     }
     
-    // Debug logging to understand response structure
-    console.log("Dashboard metrics response:", JSON.stringify(response, null, 2));
+    // Enhanced debug logging to understand response structure
+    console.log("Dashboard metrics full response:", JSON.stringify(response, null, 2));
+    console.log("Response keys:", Object.keys(response));
     
-    // Extract aggregator results with enhanced error handling
-    const aggregatorResults = response.aggregatorResults || response.aggregators || [];
+    // Try multiple possible locations for aggregator results
+    const aggregatorResults = response.aggregatorResults || 
+                             response.aggregators || 
+                             response.data?.aggregators ||
+                             response.results?.aggregators ||
+                             [];
+    
     console.log("Aggregator results found:", aggregatorResults);
+    console.log("Aggregator results type:", Array.isArray(aggregatorResults) ? 'array' : typeof aggregatorResults);
+    console.log("Aggregator results length:", aggregatorResults.length);
+    
+    // Log each aggregator result for debugging
+    if (Array.isArray(aggregatorResults)) {
+      aggregatorResults.forEach((result, index) => {
+        console.log(`Aggregator result ${index}:`, JSON.stringify(result, null, 2));
+      });
+    }
     
     const totalLeads = getAggregatorValue(aggregatorResults, 'totalLeadsContacted', 0);
     const totalMeetings = getAggregatorValue(aggregatorResults, 'totalMeetingsBooked', 0);
     const totalDeals = getAggregatorValue(aggregatorResults, 'totalDealsClosed', 0);
     const totalRevenue = getAggregatorValue(aggregatorResults, 'totalRevenue', 0);
     
-    console.log("Extracted values:", { totalLeads, totalMeetings, totalDeals, totalRevenue });
+    console.log("Final extracted values:", { totalLeads, totalMeetings, totalDeals, totalRevenue });
     
     // Calculate conversion rate
     const conversionRate = totalLeads > 0 ? ((totalDeals / totalLeads) * 100).toFixed(1) : 0;
