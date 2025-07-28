@@ -1002,11 +1002,13 @@ const handleSort = (field) => {
   useEffect(() => {
     if (!loading && emptyRows.length === 0) {
       addEmptyRow();
-    }
+}
   }, [loading, emptyRows.length]);
+
   if (loading) return <Loading />;
   if (error) return <Error message={error} onRetry={loadLeads} />;
-// Filter and sort data
+if (loading) return <Loading />;
+  if (error) return <Error message={error} onRetry={loadLeads} />;
 
   return (
     <motion.div
@@ -1812,7 +1814,6 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
 </motion.div>
   );
 };
-{/* Pagination Controls */}
 {/* Pagination Controls */}
     {(filteredAndSortedData?.length || 0) > 0 && (
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-40">
