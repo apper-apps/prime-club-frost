@@ -21,7 +21,6 @@ import {
   getDetailedRecentActivity, 
   getLeadPerformanceChart, 
   getPendingFollowUps as getDashboardPendingFollowUps, 
-  getRecentActivity, 
   getRevenueTrendsData, 
   getTeamPerformanceRankings, 
   getTodaysMeetings 
@@ -55,7 +54,6 @@ const [revenueTrends, setRevenueTrends] = useState(null);
       
 const [
         metricsData, 
-        activityData, 
         meetingsData, 
         followUpsData,
         leadChartData,
@@ -64,7 +62,6 @@ const [
         detailedActivityData
 ] = await Promise.all([
         getDashboardMetrics(),
-        getRecentActivity(),
         getTodaysMeetings(),
         getDashboardPendingFollowUps(),
 getLeadPerformanceChart(),
@@ -74,7 +71,7 @@ getLeadPerformanceChart(),
       ]);
       
 setMetrics(metricsData);
-      setActivity(activityData);
+      setActivity(detailedActivityData);
       setMeetings(meetingsData);
       setPendingFollowUps(followUpsData);
       setLeadChart(leadChartData);
