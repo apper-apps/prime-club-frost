@@ -229,7 +229,11 @@ Id: id,
     
     return null;
   } catch (error) {
-    console.error("Error updating deal:", error);
+    if (error?.response?.data?.message) {
+      console.error("Error updating deal:", error?.response?.data?.message) 
+    } else {
+      console.error(error.message);
+    }
     toast.error("Failed to update deal");
     return null;
   }
