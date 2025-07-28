@@ -11,8 +11,8 @@ const apperClient = new ApperClient({
 // Table name from the provided Tables & Fields JSON
 const TABLE_NAME = 'lead';
 
-// Get all leads
-export const getAllLeads = async () => {
+// Get all leads with optional pagination
+export const getAllLeads = async (page = 1, limit = 20) => {
   try {
     // Define fields based on the provided Tables & Fields JSON for "lead" table
     const params = {
@@ -37,6 +37,18 @@ export const getAllLeads = async () => {
         { field: { Name: "follow_up_date" } },
         { field: { Name: "added_by" } },
         { field: { Name: "product_name" } }
+      ],
+      // Add pagination parameters for server-side pagination support
+      pagingInfo: {
+        limit: limit,
+        offset: (page - 1) * limit
+      },
+      // Order by creation date descending for consistent pagination
+      orderBy: [
+        {
+          fieldName: "CreatedOn",
+          sorttype: "DESC"
+        }
       ]
     };
     

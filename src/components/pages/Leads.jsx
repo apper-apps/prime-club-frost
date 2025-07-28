@@ -80,10 +80,11 @@ const Leads = () => {
   const [emptyRows, setEmptyRows] = useState([]);
   const [nextTempId, setNextTempId] = useState(-1);
   const [selectedLeads, setSelectedLeads] = useState([]);
-  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
-  const [topScrollbarRef, setTopScrollbarRef] = useState(null);
-  const [tableScrollbarRef, setTableScrollbarRef] = useState(null);
-// Auto-save system state
+const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  // Auto-save system state
   const [editingStates, setEditingStates] = useState({}); // Track which cells are being edited
   const [optimisticData, setOptimisticData] = useState({}); // Store optimistic updates
   const [pendingValidation, setPendingValidation] = useState({}); // Track validation errors
@@ -91,27 +92,6 @@ const Leads = () => {
 useEffect(() => {
     loadLeads();
   }, []);
-
-  // Synchronize scrolling between top and bottom scrollbars
-  useEffect(() => {
-    if (!topScrollbarRef || !tableScrollbarRef) return;
-
-    const handleTopScroll = () => {
-      tableScrollbarRef.scrollLeft = topScrollbarRef.scrollLeft;
-    };
-
-    const handleTableScroll = () => {
-      topScrollbarRef.scrollLeft = tableScrollbarRef.scrollLeft;
-    };
-
-    topScrollbarRef.addEventListener('scroll', handleTopScroll);
-    tableScrollbarRef.addEventListener('scroll', handleTableScroll);
-
-    return () => {
-      topScrollbarRef.removeEventListener('scroll', handleTopScroll);
-      tableScrollbarRef.removeEventListener('scroll', handleTableScroll);
-    };
-  }, [topScrollbarRef, tableScrollbarRef]);
 const loadLeads = async () => {
     try {
       setLoading(true);
@@ -967,7 +947,7 @@ const filteredAndSortedData = data
       
       return matchesSearch && matchesStatus && matchesFunding && matchesCategory && matchesTeamSize;
     })
-.sort((a, b) => {
+    .sort((a, b) => {
       let aValue = a[sortBy];
       let bValue = b[sortBy];
       
@@ -994,6 +974,11 @@ const filteredAndSortedData = data
       }
     });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = filteredAndSortedData.slice(startIndex, endIndex);
 const handleSort = (field) => {
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -1001,6 +986,8 @@ const handleSort = (field) => {
       setSortBy(field);
       setSortOrder("asc");
     }
+    // Reset to first page when sorting changes
+    setCurrentPage(1);
 };
 
 // Always maintain one empty row at the top
@@ -1116,31 +1103,19 @@ const handleSort = (field) => {
           icon="Building2"
         />
       ) : (
-<div className="relative">
-            {/* Top scrollbar for easier horizontal navigation */}
-            <div 
-              ref={setTopScrollbarRef}
-              className="top-scrollbar overflow-x-auto border-b border-gray-200 bg-gray-50 mb-0"
-              style={{ height: '17px' }}
-            >
-<div className="top-scrollbar-content" style={{ width: '1630px', height: '1px' }}></div>
-            </div>
-            
-            <div
-              ref={setTableScrollbarRef}
-              className="overflow-x-auto"
-            >
-<table className="w-full min-w-[1400px]">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[50px]">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedLeads.length === filteredAndSortedData.length && filteredAndSortedData.length > 0}
-                                    onChange={toggleSelectAll}
-                                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                                />
-                            </th>
+        <div className="relative">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1400px]">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[50px]">
+                    <input
+                      type="checkbox"
+                      checked={selectedLeads.length === paginatedData.length && paginatedData.length > 0}
+                      onChange={toggleSelectAll}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                  </th>
 <th
                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Product Name
                             </th>
@@ -1434,8 +1409,8 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
                                 </td>
                             </tr>
                         )}
-                        {/* Existing leads data */}
-{filteredAndSortedData.map(lead => <tr key={lead.Id} className="hover:bg-gray-50" onClick={() => handleRowClick(lead.Id)}>
+{/* Existing leads data */}
+                        {paginatedData.map(lead => <tr key={lead.Id} className="hover:bg-gray-50" onClick={() => handleRowClick(lead.Id)}>
                             <td className="px-6 py-4 whitespace-nowrap w-[50px]">
                                 <input
                                     type="checkbox"
@@ -1828,7 +1803,85 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
 </motion.div>
   );
 };
+{/* Pagination Controls */}
+    {filteredAndSortedData.length > 0 && (
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-40">
+        <Card className="bg-white shadow-lg border border-gray-200">
+          <div className="flex items-center justify-between px-4 py-3 gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Show</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-600">per page</span>
+            </div>
 
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Previous page"
+              >
+                <ApperIcon name="ChevronLeft" size={16} />
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-1 rounded text-sm ${
+                        currentPage === pageNum
+                          ? 'bg-primary-600 text-white'
+                          : 'hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Next page"
+              >
+                <ApperIcon name="ChevronRight" size={16} />
+              </button>
+            </div>
+
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedData.length)} of {filteredAndSortedData.length} results
+            </div>
+          </div>
+        </Card>
+      </div>
+    )}
 // Searchable Select Component for Categories
 const SearchableSelect = ({ value, onChange, options, placeholder = "Select...", className = "", onCreateCategory }) => {
   const [isOpen, setIsOpen] = useState(false);
