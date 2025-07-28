@@ -6,6 +6,7 @@ import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
 import ApperIcon from "@/components/ApperIcon";
 import { getAllLeads } from "@/services/api/leadsService";
+import { getSalesReps } from "@/services/api/salesRepService";
 const DealEditModal = ({ isOpen, onClose, deal, onSave, isCreateMode = false }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -19,8 +20,10 @@ const DealEditModal = ({ isOpen, onClose, deal, onSave, isCreateMode = false }) 
 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
-  const [leads, setLeads] = useState([]);
+const [leads, setLeads] = useState([]);
   const [loadingLeads, setLoadingLeads] = useState(false);
+  const [salesReps, setSalesReps] = useState([]);
+  const [loadingSalesReps, setLoadingSalesReps] = useState(false);
 const stages = [
     "Connected",
     "Locked", 
@@ -38,11 +41,6 @@ const stages = [
     "Black Edition"
   ];
 
-  const salesReps = [
-    "Sarah Johnson",
-    "Mike Davis",
-    "Tom Wilson"
-  ];
 
   const months = [
     { value: 1, label: "January" },
@@ -90,8 +88,24 @@ useEffect(() => {
       }
     };
 
+    const loadSalesReps = async () => {
+      if (isOpen) {
+        setLoadingSalesReps(true);
+        try {
+          const salesRepsData = await getSalesReps();
+          setSalesReps(salesRepsData);
+        } catch (error) {
+          console.error("Error loading sales reps:", error);
+          toast.error("Failed to load sales reps");
+        } finally {
+          setLoadingSalesReps(false);
+        }
+      }
+    };
+
     if (isOpen) {
       loadLeads();
+      loadSalesReps();
       
       if (isCreateMode) {
         // Clear form for create mode
@@ -375,19 +389,24 @@ const handleLeadChange = (leadId) => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+<label className="block text-sm font-medium text-gray-700 mb-2">
                       Assigned Rep *
                     </label>
                     <select
                       value={formData.assignedRep}
                       onChange={(e) => handleInputChange("assignedRep", e.target.value)}
+                      disabled={loadingSalesReps}
                       className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                         errors.assignedRep ? "border-red-500" : ""
                       }`}
                     >
-                      <option value="">Select rep</option>
+                      <option value="">
+                        {loadingSalesReps ? "Loading reps..." : "Select rep"}
+                      </option>
                       {salesReps.map(rep => (
-                        <option key={rep} value={rep}>{rep}</option>
+                        <option key={rep.Id || rep.id} value={rep.Name || rep.name}>
+                          {rep.Name || rep.name}
+                        </option>
                       ))}
                     </select>
                     {errors.assignedRep && (
