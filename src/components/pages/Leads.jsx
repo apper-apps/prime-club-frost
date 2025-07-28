@@ -1729,79 +1729,6 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
       )}
 </Card>
     
-    {/* Pagination state variables */}
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(20);
-    
-    // Filtered and sorted data for pagination
-    const filteredAndSortedData = useMemo(() => {
-      let filtered = leads;
-      
-      // Apply search filter
-      if (searchTerm) {
-        filtered = filtered.filter(lead => 
-          lead.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          lead.website_url?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          lead.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          lead.status?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-      
-      // Apply status filter
-      if (statusFilter && statusFilter !== 'all') {
-        filtered = filtered.filter(lead => lead.status === statusFilter);
-      }
-      
-      // Apply funding filter
-      if (fundingFilter && fundingFilter !== 'all') {
-        filtered = filtered.filter(lead => lead.funding_type === fundingFilter);
-      }
-      
-      // Apply category filter
-      if (categoryFilter && categoryFilter !== 'all') {
-        filtered = filtered.filter(lead => lead.category === categoryFilter);
-      }
-      
-      // Apply team size filter
-      if (teamSizeFilter && teamSizeFilter !== 'all') {
-        filtered = filtered.filter(lead => lead.team_size === teamSizeFilter);
-      }
-      
-      // Apply sorting
-      if (sortField) {
-        filtered.sort((a, b) => {
-          let aValue = a[sortField];
-          let bValue = b[sortField];
-          
-          // Handle null/undefined values
-          if (aValue == null) aValue = '';
-          if (bValue == null) bValue = '';
-          
-          // Convert to string for comparison
-          aValue = String(aValue).toLowerCase();
-          bValue = String(bValue).toLowerCase();
-          
-          if (sortDirection === 'asc') {
-            return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-          } else {
-            return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-          }
-        });
-      }
-      
-      return filtered;
-    }, [leads, searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter, sortField, sortDirection]);
-    
-    // Calculate pagination values
-    const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedData = filteredAndSortedData.slice(startIndex, endIndex);
-    
-    // Reset current page when filters change
-    useEffect(() => {
-      setCurrentPage(1);
-    }, [searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter]);
     
     {/* Auto-save status indicator */}
     {Object.keys(editingStates).length > 0 && (
@@ -1885,10 +1812,7 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
 </motion.div>
   );
 };
-// Note: Pagination state and filtering logic should be implemented inside the main Leads component function
-  
-{/* Pagination logic is now handled above in the useMemo and useEffect hooks */}
-
+{/* Pagination Controls */}
 {/* Pagination Controls */}
     {(filteredAndSortedData?.length || 0) > 0 && (
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-40">
