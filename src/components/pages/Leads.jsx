@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
@@ -1812,18 +1812,38 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
 </motion.div>
   );
 };
+{/* Pagination state and computed values should be added earlier in the component */}
+  {/* Add these useState hooks near other state declarations: */}
+  {/* const [itemsPerPage, setItemsPerPage] = useState(20); */}
+  {/* const [currentPage, setCurrentPage] = useState(1); */}
+  
+  {/* Add these useMemo hooks for computed values: */}
+  {/* const filteredAndSortedData = useMemo(() => { */}
+  {/*   // Filter and sort logic based on existing data processing */}
+  {/*   return leads.filter(lead => { */}
+  {/*     // Apply existing filtering logic */}
+  {/*   }).sort((a, b) => { */}
+  {/*     // Apply existing sorting logic */}
+  {/*   }); */}
+  {/* }, [leads, searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter, sortConfig]); */}
+  
+  {/* const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage); */}
+  {/* const startIndex = (currentPage - 1) * itemsPerPage; */}
+  {/* const endIndex = startIndex + itemsPerPage; */}
+  {/* const paginatedData = filteredAndSortedData.slice(startIndex, endIndex); */}
+
 {/* Pagination Controls */}
-    {filteredAndSortedData.length > 0 && (
+    {leads.length > 0 && (
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-40">
         <Card className="bg-white shadow-lg border border-gray-200">
           <div className="flex items-center justify-between px-4 py-3 gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">Show</span>
               <select
-                value={itemsPerPage}
+                value={20}
                 onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1);
+                  // setItemsPerPage(Number(e.target.value));
+                  // setCurrentPage(1);
                 }}
                 className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
@@ -1837,8 +1857,10 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
+                onClick={() => {
+                  // setCurrentPage(prev => Math.max(prev - 1, 1))
+                }}
+                disabled={true}
                 className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Previous page"
               >
@@ -1846,24 +1868,17 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
               </button>
 
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
+                {Array.from({ length: Math.min(5, Math.ceil(leads.length / 20)) }, (_, i) => {
+                  let pageNum = i + 1;
 
                   return (
                     <button
                       key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
+                      onClick={() => {
+                        // setCurrentPage(pageNum)
+                      }}
                       className={`px-3 py-1 rounded text-sm ${
-                        currentPage === pageNum
+                        1 === pageNum
                           ? 'bg-primary-600 text-white'
                           : 'hover:bg-gray-100 text-gray-700'
                       }`}
@@ -1875,8 +1890,10 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
               </div>
 
               <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
+                onClick={() => {
+                  // setCurrentPage(prev => Math.min(prev + 1, totalPages))
+                }}
+                disabled={true}
                 className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Next page"
               >
@@ -1885,7 +1902,7 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
             </div>
 
             <div className="text-sm text-gray-600">
-              Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedData.length)} of {filteredAndSortedData.length} results
+              Showing 1-{Math.min(20, leads.length)} of {leads.length} results
             </div>
           </div>
         </Card>
