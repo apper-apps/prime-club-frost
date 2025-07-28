@@ -294,9 +294,110 @@ export const getDetailedRecentActivity = async () => {
   await delay(300);
   
   try {
-    const activity = await getRecentActivity();
-    
-    return activity.map(item => ({
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+
+    // Fetch recent deals
+    const dealsParams = {
+      fields: [
+        { field: { Name: "Name" } },
+        { field: { Name: "stage" } },
+        { field: { Name: "value" } },
+        { field: { Name: "assigned_rep" } },
+        { field: { Name: "created_at" } },
+        { field: { Name: "ModifiedOn" } }
+      ],
+      orderBy: [{ fieldName: "ModifiedOn", sorttype: "DESC" }],
+      pagingInfo: { limit: 10, offset: 0 }
+    };
+
+    // Fetch recent leads
+    const leadsParams = {
+      fields: [
+        { field: { Name: "Name" } },
+        { field: { Name: "status" } },
+        { field: { Name: "added_by_name" } },
+        { field: { Name: "created_at" } },
+        { field: { Name: "ModifiedOn" } }
+      ],
+      orderBy: [{ fieldName: "ModifiedOn", sorttype: "DESC" }],
+      pagingInfo: { limit: 10, offset: 0 }
+    };
+
+    // Fetch recent contacts
+    const contactsParams = {
+      fields: [
+        { field: { Name: "Name" } },
+        { field: { Name: "status" } },
+        { field: { Name: "assigned_rep" } },
+        { field: { Name: "created_at" } },
+        { field: { Name: "ModifiedOn" } }
+      ],
+      orderBy: [{ fieldName: "ModifiedOn", sorttype: "DESC" }],
+      pagingInfo: { limit: 10, offset: 0 }
+    };
+
+    const [dealsResponse, leadsResponse, contactsResponse] = await Promise.all([
+      apperClient.fetchRecords('deal', dealsParams),
+      apperClient.fetchRecords('lead', leadsParams),
+      apperClient.fetchRecords('app_contact', contactsParams)
+    ]);
+
+    const activities = [];
+
+    // Process deals
+    if (dealsResponse.success && dealsResponse.data) {
+      dealsResponse.data.forEach(deal => {
+        activities.push({
+          id: `deal-${deal.Id}`,
+          type: 'deal',
+          title: deal.Name || 'Unnamed Deal',
+          description: `Deal ${deal.stage || 'Updated'} • $${deal.value || 0}`,
+          user: deal.assigned_rep || 'Unknown Rep',
+          timestamp: deal.ModifiedOn || deal.created_at || new Date().toISOString(),
+          icon: 'handshake'
+        });
+      });
+    }
+
+    // Process leads
+    if (leadsResponse.success && leadsResponse.data) {
+      leadsResponse.data.forEach(lead => {
+        activities.push({
+          id: `lead-${lead.Id}`,
+          type: 'lead',
+          title: lead.Name || 'Unnamed Lead',
+          description: `Lead ${lead.status || 'Added'}`,
+          user: lead.added_by_name || 'Unknown User',
+          timestamp: lead.ModifiedOn || lead.created_at || new Date().toISOString(),
+          icon: 'target'
+        });
+      });
+    }
+
+    // Process contacts
+    if (contactsResponse.success && contactsResponse.data) {
+      contactsResponse.data.forEach(contact => {
+        activities.push({
+          id: `contact-${contact.Id}`,
+          type: 'contact',
+          title: contact.Name || 'Unnamed Contact',
+          description: `Contact ${contact.status || 'Updated'}`,
+          user: contact.assigned_rep || 'Unknown Rep',
+          timestamp: contact.ModifiedOn || contact.created_at || new Date().toISOString(),
+          icon: 'mail'
+        });
+      });
+    }
+
+    // Sort all activities by timestamp (most recent first)
+    activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    // Return top 20 most recent activities with enhanced details
+    return activities.slice(0, 20).map(item => ({
       ...item,
       details: `Activity details for ${item.title}`,
       user: item.user || 'System',
@@ -315,7 +416,7 @@ export const refreshDashboardMetrics = async () => {
   try {
     const [metrics, activity] = await Promise.all([
       getDashboardMetrics(),
-      getRecentActivity()
+      getDetailedRecentActivity()
     ]);
     return { metrics, activity, refreshed: true };
   } catch (error) {
