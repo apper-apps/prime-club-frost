@@ -1,15 +1,6 @@
 {
   "metrics": [
     {
-      "id": 1,
-      "title": "Total Leads Contacted",
-      "value": "0",
-      "icon": "Users",
-      "trend": "neutral",
-      "trendValue": "0%",
-      "color": "primary"
-    },
-    {
       "id": 2,
       "title": "Meetings Booked",
       "value": "0",
