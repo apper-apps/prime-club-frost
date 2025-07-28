@@ -63,7 +63,7 @@ export const getDashboardMetrics = async () => {
       ]
     };
     
-    const response = await apperClient.fetchRecords('sales_rep', params);
+const response = await apperClient.fetchRecords('sales_rep', params);
     
     if (!response.success) {
       console.error("Error fetching dashboard metrics:", response.message);
@@ -72,13 +72,19 @@ export const getDashboardMetrics = async () => {
       return getDefaultMetrics();
     }
     
-    // Extract aggregator results
-    const aggregatorResults = response.aggregatorResults || [];
+    // Debug logging to understand response structure
+    console.log("Dashboard metrics response:", JSON.stringify(response, null, 2));
+    
+    // Extract aggregator results with enhanced error handling
+    const aggregatorResults = response.aggregatorResults || response.aggregators || [];
+    console.log("Aggregator results found:", aggregatorResults);
     
     const totalLeads = getAggregatorValue(aggregatorResults, 'totalLeadsContacted', 0);
     const totalMeetings = getAggregatorValue(aggregatorResults, 'totalMeetingsBooked', 0);
     const totalDeals = getAggregatorValue(aggregatorResults, 'totalDealsClosed', 0);
     const totalRevenue = getAggregatorValue(aggregatorResults, 'totalRevenue', 0);
+    
+    console.log("Extracted values:", { totalLeads, totalMeetings, totalDeals, totalRevenue });
     
     // Calculate conversion rate
     const conversionRate = totalLeads > 0 ? ((totalDeals / totalLeads) * 100).toFixed(1) : 0;
@@ -130,8 +136,24 @@ export const getDashboardMetrics = async () => {
 
 // Helper function to extract aggregator values
 const getAggregatorValue = (aggregatorResults, id, defaultValue = 0) => {
-  const result = aggregatorResults.find(r => r.id === id);
-  return result?.value || defaultValue;
+  if (!Array.isArray(aggregatorResults)) {
+    console.warn("Aggregator results is not an array:", aggregatorResults);
+    return defaultValue;
+  }
+  
+  const result = aggregatorResults.find(r => r && r.id === id);
+  console.log(`Looking for aggregator ${id}, found:`, result);
+  
+  if (result) {
+    // Handle different possible value formats
+    const value = result.value !== undefined ? result.value : 
+                  result.count !== undefined ? result.count :
+                  result.sum !== undefined ? result.sum : defaultValue;
+    console.log(`Aggregator ${id} value:`, value);
+    return Number(value) || defaultValue;
+  }
+  
+  return defaultValue;
 };
 
 // Default metrics fallback
