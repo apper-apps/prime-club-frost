@@ -1831,9 +1831,10 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
   {/* const startIndex = (currentPage - 1) * itemsPerPage; */}
   {/* const endIndex = startIndex + itemsPerPage; */}
 {/* const paginatedData = filteredAndSortedData.slice(startIndex, endIndex); */}
+{/* const paginatedData = filteredAndSortedData.slice(startIndex, endIndex); */}
 
 {/* Pagination Controls */}
-    {(data?.length || 0) > 0 && (
+    {(filteredAndSortedData?.length || 0) > 0 && (
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-40">
         <Card className="bg-white shadow-lg border border-gray-200">
           <div className="flex items-center justify-between px-4 py-3 gap-4">
@@ -1868,7 +1869,7 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
               </button>
 
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, Math.ceil((data?.length || 0) / 20)) }, (_, i) => {
+                {Array.from({ length: Math.min(5, Math.ceil((filteredAndSortedData?.length || 0) / 20)) }, (_, i) => {
                   let pageNum = i + 1;
 
                   return (
@@ -1902,7 +1903,7 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
             </div>
 
             <div className="text-sm text-gray-600">
-              Showing 1-{Math.min(20, (data?.length || 0))} of {data?.length || 0} results
+              Showing 1-{Math.min(20, (filteredAndSortedData?.length || 0))} of {filteredAndSortedData?.length || 0} results
             </div>
           </div>
         </Card>
