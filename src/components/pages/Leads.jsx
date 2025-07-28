@@ -81,7 +81,7 @@ const Leads = () => {
   const [nextTempId, setNextTempId] = useState(-1);
   const [selectedLeads, setSelectedLeads] = useState([]);
 const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
-  // Pagination state
+// Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   // Auto-save system state
@@ -89,6 +89,62 @@ const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [optimisticData, setOptimisticData] = useState({}); // Store optimistic updates
   const [pendingValidation, setPendingValidation] = useState({}); // Track validation errors
   const [savingStates, setSavingStates] = useState({}); // Track which rows are being saved
+
+  // Filter and sort data
+  const filteredAndSortedData = useMemo(() => {
+    let filtered = data.filter(lead => {
+      const matchesSearch = !searchTerm || 
+        lead.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.website_url?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.team_size?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+      const matchesFunding = fundingFilter === 'all' || lead.funding_type === fundingFilter;
+      const matchesCategory = categoryFilter === 'all' || lead.category === categoryFilter;
+      const matchesTeamSize = teamSizeFilter === 'all' || lead.team_size === teamSizeFilter;
+      
+      return matchesSearch && matchesStatus && matchesFunding && matchesCategory && matchesTeamSize;
+    });
+
+    // Apply sorting
+    if (sortBy) {
+      filtered.sort((a, b) => {
+        let aValue = a[sortBy] || '';
+        let bValue = b[sortBy] || '';
+        
+        if (sortBy === "arr") {
+          aValue = Number(aValue);
+          bValue = Number(bValue);
+        }
+        
+        if (sortBy === "created_at") {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
+        }
+        
+        if (sortBy === "website_url") {
+          // Sort website_url by creation date (newest first) instead of alphabetical
+          aValue = new Date(a.created_at);
+          bValue = new Date(b.created_at);
+        }
+        
+        if (sortOrder === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+    }
+
+    return filtered;
+  }, [data, searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter, sortBy, sortOrder]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = filteredAndSortedData.slice(startIndex, endIndex);
 useEffect(() => {
     loadLeads();
   }, []);
@@ -952,59 +1008,6 @@ const handleSort = (field) => {
   if (loading) return <Loading />;
   if (error) return <Error message={error} onRetry={loadLeads} />;
 // Filter and sort data
-  const filteredAndSortedData = useMemo(() => {
-    let filtered = data.filter(lead => {
-      const matchesSearch = !searchTerm || 
-        lead.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.website_url?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.team_size?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
-      const matchesFunding = fundingFilter === 'all' || lead.funding_type === fundingFilter;
-      const matchesCategory = categoryFilter === 'all' || lead.category === categoryFilter;
-      const matchesTeamSize = teamSizeFilter === 'all' || lead.team_size === teamSizeFilter;
-      
-      return matchesSearch && matchesStatus && matchesFunding && matchesCategory && matchesTeamSize;
-    });
-// Apply sorting
-    if (sortBy) {
-filtered.sort((a, b) => {
-        let aValue = a[sortBy] || '';
-        let bValue = b[sortBy] || '';
-        
-        if (sortBy === "arr") {
-          aValue = Number(aValue);
-          bValue = Number(bValue);
-        }
-        
-        if (sortBy === "created_at") {
-          aValue = new Date(aValue);
-          bValue = new Date(bValue);
-        }
-        
-        if (sortBy === "website_url") {
-          // Sort website_url by creation date (newest first) instead of alphabetical
-          aValue = new Date(a.created_at);
-          bValue = new Date(b.created_at);
-        }
-        
-        if (sortOrder === 'asc') {
-          return aValue > bValue ? 1 : -1;
-        } else {
-          return aValue < bValue ? 1 : -1;
-        }
-      });
-    }
-
-    return filtered;
-}, [data, searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter, sortBy, sortOrder]);
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedData = filteredAndSortedData.slice(startIndex, endIndex);
 
   return (
     <motion.div
