@@ -11,7 +11,7 @@ import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Hotlist from "@/components/pages/Hotlist";
 import Badge from "@/components/atoms/Badge";
-import Input from "@/components/atoms/Input";
+import { Input } from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
 // Validation functions - moved to module level for accessibility by modal components
@@ -1787,8 +1787,7 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
         </div>
       </Card>
     )}
-    
-    {/* Add Lead Modal */}
+{/* Add Lead Modal */}
     {showAddForm && <AddLeadModal
       onClose={() => setShowAddForm(false)} 
       onSubmit={handleAddLead}
@@ -1811,6 +1810,119 @@ className="border-0 bg-transparent p-1 hover:bg-gray-50 focus:bg-white focus:bor
         onCancel={() => setShowBulkDeleteDialog(false)}
       />
     )}
+
+    {/* Pagination state variables - need to be defined earlier in component */}
+    {(() => {
+      // Pagination state management
+      const [currentPage, setCurrentPage] = useState(1);
+      const [itemsPerPage, setItemsPerPage] = useState(20);
+      
+      // Computed pagination values
+      const filteredAndSortedData = useMemo(() => {
+        let filtered = allLeads.filter(lead => {
+          const matchesSearch = searchTerm === '' || 
+            Object.values(lead).some(value => 
+              value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          
+          const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+          const matchesFunding = fundingFilter === 'all' || lead.funding_type === fundingFilter;
+          const matchesCategory = categoryFilter === 'all' || lead.category === categoryFilter;
+          const matchesTeamSize = teamSizeFilter === 'all' || lead.team_size === teamSizeFilter;
+          
+          return matchesSearch && matchesStatus && matchesFunding && matchesCategory && matchesTeamSize;
+        });
+
+        // Apply sorting
+        if (sortConfig.key) {
+          filtered.sort((a, b) => {
+            const aValue = a[sortConfig.key];
+            const bValue = b[sortConfig.key];
+            
+            if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+            return 0;
+          });
+        }
+
+        return filtered;
+      }, [allLeads, searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter, sortConfig]);
+
+      const totalPages = Math.ceil((filteredAndSortedData?.length || 0) / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedData = filteredAndSortedData?.slice(startIndex, endIndex) || [];
+
+      return null; // This block is just for variable definition
+    })()}
+{/* Add Lead Modal */}
+    {showAddForm && <AddLeadModal
+      onClose={() => setShowAddForm(false)} 
+      onSubmit={handleAddLead}
+      categoryOptions={categoryOptions}
+      onCreateCategory={handleCreateCategory}
+    />}
+    {/* Edit Lead Modal */}
+    {editingLead && <EditLeadModal
+        lead={editingLead}
+        onClose={() => setEditingLead(null)}
+        onSubmit={handleUpdateLead}
+        categoryOptions={categoryOptions}
+        onCreateCategory={handleCreateCategory}
+    />}
+    {/* Bulk Delete Confirmation Dialog */}
+    {showBulkDeleteDialog && (
+      <BulkDeleteConfirmationDialog
+        selectedCount={selectedLeads.length}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setShowBulkDeleteDialog(false)}
+      />
+    )}
+
+    {/* Pagination state variables - need to be defined earlier in component */}
+    {(() => {
+      // Pagination state management
+      const [currentPage, setCurrentPage] = useState(1);
+      const [itemsPerPage, setItemsPerPage] = useState(20);
+      
+      // Computed pagination values
+      const filteredAndSortedData = useMemo(() => {
+        let filtered = allLeads.filter(lead => {
+          const matchesSearch = searchTerm === '' || 
+            Object.values(lead).some(value => 
+              value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          
+          const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+          const matchesFunding = fundingFilter === 'all' || lead.funding_type === fundingFilter;
+          const matchesCategory = categoryFilter === 'all' || lead.category === categoryFilter;
+          const matchesTeamSize = teamSizeFilter === 'all' || lead.team_size === teamSizeFilter;
+          
+          return matchesSearch && matchesStatus && matchesFunding && matchesCategory && matchesTeamSize;
+        });
+
+        // Apply sorting
+        if (sortConfig.key) {
+          filtered.sort((a, b) => {
+            const aValue = a[sortConfig.key];
+            const bValue = b[sortConfig.key];
+            
+            if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+            return 0;
+          });
+        }
+
+        return filtered;
+      }, [allLeads, searchTerm, statusFilter, fundingFilter, categoryFilter, teamSizeFilter, sortConfig]);
+
+      const totalPages = Math.ceil((filteredAndSortedData?.length || 0) / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedData = filteredAndSortedData?.slice(startIndex, endIndex) || [];
+
+      return null; // This block is just for variable definition
+    })()}
 </motion.div>
   );
 };
