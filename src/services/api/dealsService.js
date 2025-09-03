@@ -155,7 +155,7 @@ const params = {
         });
       }
       
-      if (successfulRecords.length > 0) {
+if (successfulRecords.length > 0 && successfulRecords[0].data) {
         toast.success("Deal created successfully");
         return successfulRecords[0].data;
       }
